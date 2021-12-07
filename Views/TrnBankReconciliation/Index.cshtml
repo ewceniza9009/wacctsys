@@ -1,0 +1,676 @@
+﻿@using webfmis.DTO
+@model BankReconciliation
+
+@{
+    ViewData["Title"] = " - Bank Reconciliation";
+}
+
+<style>
+    .cmd-buttons {
+        margin-left: 10px;
+        width: 90px;
+    }
+
+    .recordcontent {
+        display: none;
+        padding: 5px;
+    }
+
+    .k-floating-label-container {
+        width: 100%;
+    }
+
+    .modal-dialog {
+        max-width: 1500px; /* New width for default modal */
+    }
+</style>
+
+<div class="row" style="margin-bottom: 5px; margin-top: 5px">
+    <div class="col-md-6">
+        <h5 style="margin-top: 10px;"><i class="fas fa-university"></i> Bank Reconciliation</h5>
+    </div>
+
+    <div class="col-md-6">
+        <div class="CmdHome">
+            <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                    type="button">
+                <span class="btn-label">
+                    <i class="fa fa-arrow-left"></i>
+                </span>Home
+            </button>
+        </div>
+
+        <div class="CmdPreview">
+            @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanPrint)
+            {
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button">
+                    <span class="btn-label">
+                        <i class="fa fa-print"></i>
+                    </span>
+                    Print
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+<kendo-tabstrip name="banReconTab">
+    <popup-animation>
+        <open effects="fade:in" />
+    </popup-animation>
+    <items>
+        <tabstrip-item text="Bank Reconciliation" selected="true">
+            <content>
+                <div class="row">
+                    <div class=col-md-12 >
+                        <form id="frmDetail" asp-antiforgery="false" method="post">
+                            <div class="row" style="padding-top: 10px">
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Bank</label>
+                                        <div class="col-md-8">
+                                            <kendo-combobox name="BankId" style="width: 70%"
+                                                            datatextfield="Article"
+                                                            datavaluefield="Id"
+                                                            value="@Model.BankId"
+                                                            min-length="3"
+                                                            height="520"
+                                                            filter="FilterType.Contains"
+                                                            on-change="EntityComboxChange">
+                                                <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                                    <transport>
+                                                        <read url="@Url.Action("Banks", "TrnBankReconciliation")" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-combobox>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Date Start</label>
+                                        <div class="col-md-8">
+                                            <kendo-datepicker name="DateStart" placeholder="Date Start" value="@Model.DateStart" style="width: 50%; text-align: end;" on-change="DateChange" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Date End</label>
+                                        <div class="col-md-8">
+                                            <kendo-datepicker name="DateEnd" placeholder="Date Start" value="@Model.DateEnd" style="width: 50%; text-align: end;" on-change="DateChange" />
+                                        </div>
+                                    </div>
+
+                                    <br/>
+                                    <br/>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Ending balance as per bank</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" name="EndingBalancePerBank" data-inputmask="'alias': 'currency'" value="@Model.EndingBalancePerBank" style="width: 50%; text-align: end" onchange="EndingBalancePerBankChanged()"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Total deposit in transit</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" name="TotalDepositInTransit" data-inputmask="'alias': 'currency'" value="@Model.TotalDepositInTransit" style="width: 50%; text-align: end" disabled/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Total outstanding withdrawals</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" name="TotalOutstandingWithdrawals" data-inputmask="'alias': 'currency'" value="@Model.TotalOutstandingWithdrawals" style="width: 50%; text-align: end" disabled/>
+                                        </div>
+                                    </div>
+
+                                     <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Adjusted ending balance as per bank</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" name="AdjustedEndingBalancePerBank" data-inputmask="'alias': 'currency'" value="@Model.AdjustedEndingBalancePerBank" style="width: 50%; text-align: end" disabled/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Prepared By</label>
+                                        <div class="col-md-8">
+                                            <kendo-combobox name="PreparedById" style="width: 90%"
+                                                            datatextfield="FullName"
+                                                            datavaluefield="Id"
+                                                            value="@Model.PreparedById"
+                                                            min-length="3"
+                                                            height="520"
+                                                            filter="FilterType.Contains"
+                                                            on-change="EntityComboxChange">
+                                                <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                                    <transport>
+                                                        <read url="@Url.Action("Users", "TrnBankReconciliation")" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-combobox>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Checked By</label>
+                                        <div class="col-md-8">
+                                            <kendo-combobox name="CheckedById" style="width: 90%"
+                                                            datatextfield="FullName"
+                                                            datavaluefield="Id"
+                                                            value="@Model.CheckedById"
+                                                            min-length="3"
+                                                            height="520"
+                                                            filter="FilterType.Contains"
+                                                            on-change="EntityComboxChange">
+                                                <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                                    <transport>
+                                                        <read url="@Url.Action("Users", "TrnBankReconciliation")" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-combobox>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Approved By</label>
+                                        <div class="col-md-8">
+                                            <kendo-combobox name="ApprovedById" style="width: 90%"
+                                                            datatextfield="FullName"
+                                                            datavaluefield="Id"
+                                                            value="@Model.ApprovedById"
+                                                            min-length="3"
+                                                            height="520"
+                                                            filter="FilterType.Contains"
+                                                            on-change="EntityComboxChange">
+                                                <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                                    <transport>
+                                                        <read url="@Url.Action("Users", "TrnBankReconciliation")" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-combobox>
+                                        </div>
+                                    </div>
+
+                                    <br/>
+                                    <br/>
+
+                                     <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Ending balance as per books</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" name="EndingBalancePerBook" data-inputmask="'alias': 'currency'" value="@Model.EndingBalancePerBook" style="width: 50%; text-align: end" disabled/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Total debit</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" name="TotalDebit" data-inputmask="'alias': 'currency'" value="@Model.TotalDebit" style="width: 50%; text-align: end" disabled/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Total credit</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" name="TotalCredit" data-inputmask="'alias': 'currency'" value="@Model.TotalCredit" style="width: 50%; text-align: end" disabled/>
+                                        </div>
+                                    </div>
+
+                                     <div class="form-group row">
+                                        <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Adjusted ending balance as per books</label>
+                                        <div class="col-md-8">
+                                            <input class="form-control" name="AdjustedEndingBalancePerBooks" data-inputmask="'alias': 'currency'" value="@Model.AdjustedEndingBalancePerBooks" style="width: 50%; text-align: end" disabled/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </content>
+        </tabstrip-item>
+
+        <tabstrip-item text="Deposits">
+            <content>
+                <form id="frmDeposits">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group row">
+                                <label class="col-md-5" style="padding-top: 5px; font-weight: bold;">Amount: </label>
+                                <div class="col-md-7">
+                                    <input class="form-control" name="TotalDepositAmount" data-inputmask="'alias': 'currency'" style="width: 100%; text-align: end" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-5" style="padding-top: 5px; font-weight: bold;">In Transit: </label>
+                                <div class="col-md-7">
+                                    <input class="form-control" name="TotalInTransit" data-inputmask="'alias': 'currency'" style="width: 100%; text-align: end" disabled/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @(Html.Kendo().Grid<webfmis.DTO.Deposit>()
+                            .Name("detailSF1")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(x => x.ORNumber)
+                                    .Title("OR Number")
+                                    .Filterable(false)
+                                    .Width(150);
+                                columns.Bound(x => x.ORDate)
+                                    .Title("OR Date")
+                                    .Filterable(false)
+                                    .Format("{0:MM/dd/yyyy}")
+                                    .Width(100);
+                                columns.Bound(x => x.Customer)
+                                    .Title("Customer")
+                                    .Filterable(false)
+                                    .Width(300);
+                                columns.Bound(x => x.PayType)
+                                    .Title("Pay Type")
+                                    .Filterable(false)
+                                    .Width(125);
+                                columns.Bound(x => x.CheckNumber)
+                                    .Title("Check No.")
+                                    .Filterable(false)
+                                    .Width(125);
+                                columns.Bound(x => x.CheckDate)
+                                    .Title("Check Date")
+                                    .Filterable(false)
+                                    .Format("{0:MM/dd/yyyy}")
+                                    .Width(100);
+                                columns.Bound(x => x.Amount)
+                                    .Title("Amount")
+                                    .Filterable(false)
+                                    .Width(125)
+                                    .HtmlAttributes(new { @style = "text-align: end" });
+                                columns.Bound(x => x.IsClear)
+                                    .Title("C")
+                                    .ClientTemplate("<input type='checkbox' #= IsClear ? checked='checked' : '' # />")
+                                    .Filterable(false)
+                                    .Width(50);
+                                columns.Bound(x => x.InTransit)
+                                    .Title("In Transit")
+                                    .Filterable(false)
+                                    .Width(125)
+                                    .HtmlAttributes(new { @style = "text-align: end" });
+                            })
+                            .Selectable(x => x.Mode(GridSelectionMode.Single))
+                            .Pageable()
+                            .Editable(editable => editable.Mode(GridEditMode.InCell))
+                            .Scrollable()
+                            .Height(400)
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.DepositoryBankId);
+                                    model.Field(p => p.ORNumber).Editable(false);
+                                    model.Field(p => p.ORDate).Editable(false);
+                                    model.Field(p => p.Customer).Editable(false);
+                                    model.Field(p => p.IsLocked).Editable(false);
+                                    model.Field(p => p.Amount).Editable(false);
+                                    model.Field(p => p.IsClear).Editable(false);
+                                    model.Field(p => p.InTransit).Editable(false);
+                                    model.Field(p => p.PayType).Editable(false);
+                                    model.Field(p => p.CheckNumber).Editable(false);
+                                    model.Field(p => p.CheckDate).Editable(false);
+                                    model.Field(p => p.CheckBank).Editable(false);
+                                })
+                                .ServerOperation(true)
+                                .PageSize(10)
+                                .Read(read => read.Action("DepositGrid", "TrnBankReconciliation"))
+                        ))
+                </form>
+            </content>
+        </tabstrip-item>
+
+        <tabstrip-item text="Withdrawals">
+            <content>
+                 <form id="frmWithdrawals">
+                     <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group row">
+                                <label class="col-md-5" style="padding-top: 5px; font-weight: bold;">Amount: </label>
+                                <div class="col-md-7">
+                                    <input class="form-control" name="TotalWithdrawalAmount" data-inputmask="'alias': 'currency'" style="width: 100%; text-align: end" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-5" style="padding-top: 5px; font-weight: bold;">Outstanding: </label>
+                                <div class="col-md-7">
+                                    <input class="form-control" name="TotalOutstanding" data-inputmask="'alias': 'currency'" style="width: 100%; text-align: end" disabled/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @(Html.Kendo().Grid<webfmis.DTO.Withdrawal>()
+                            .Name("detailSF2")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(x => x.CVNumber)
+                                    .Title("CV Number")
+                                    .Filterable(false)
+                                    .Width(150);
+                                columns.Bound(x => x.CVDate)
+                                    .Title("CV Date")
+                                    .Filterable(false)
+                                    .Format("{0:MM/dd/yyyy}")
+                                    .Width(100);
+                                columns.Bound(x => x.Payee)
+                                    .Title("Payee")
+                                    .Filterable(false)
+                                    .Width(300);
+                                columns.Bound(x => x.PayType)
+                                    .Title("Pay Type")
+                                    .Filterable(false)
+                                    .Width(125);
+                                columns.Bound(x => x.CheckNumber)
+                                    .Title("Check No.")
+                                    .Filterable(false)
+                                    .Width(125);
+                                columns.Bound(x => x.CheckDate)
+                                    .Title("Check Date")
+                                    .Filterable(false)
+                                    .Format("{0:MM/dd/yyyy}")
+                                    .Width(100);
+                                columns.Bound(x => x.Amount)
+                                    .Title("Amount")
+                                    .Filterable(false)
+                                    .Width(125)
+                                    .HtmlAttributes(new { @style = "text-align: end" });
+                                columns.Bound(x => x.IsClear)
+                                    .Title("C")
+                                    .ClientTemplate("<input type='checkbox' #= IsClear ? checked='checked' : '' # />")
+                                    .Filterable(false)
+                                    .Width(50);
+                                columns.Bound(x => x.Outstanding)
+                                    .Title("Outstanding")
+                                    .Filterable(false)
+                                    .Width(125)
+                                    .HtmlAttributes(new { @style = "text-align: end" });
+                            })
+                            .Selectable(x => x.Mode(GridSelectionMode.Single))
+                            .Pageable()
+                            .Editable(editable => editable.Mode(GridEditMode.InCell))
+                            .Scrollable()
+                            .Height(400)
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .Model(model =>
+                                {
+                                    model.Field(p => p.CVNumber).Editable(false);
+                                    model.Field(p => p.CVDate).Editable(false);
+                                    model.Field(p => p.Payee).Editable(false);
+                                    model.Field(p => p.IsLocked).Editable(false);
+                                    model.Field(p => p.Amount).Editable(false);
+                                    model.Field(p => p.IsClear).Editable(false);
+                                    model.Field(p => p.Outstanding).Editable(false);
+                                    model.Field(p => p.PayType).Editable(false);
+                                    model.Field(p => p.CheckNumber).Editable(false);
+                                    model.Field(p => p.CheckDate).Editable(false);
+                                })
+                                .ServerOperation(true)
+                                .PageSize(10)
+                                .Read(read => read.Action("WithdrawalGrid", "TrnBankReconciliation"))
+                        ))
+                </form>
+            </content>
+        </tabstrip-item>
+
+        <tabstrip-item text="Adjustments">
+            <content>
+                <form id="frmAdjustments">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group row">
+                                <label class="col-md-5" style="padding-top: 5px; font-weight: bold;">Debit: </label>
+                                <div class="col-md-7">
+                                    <input class="form-control" name="TotalDebit" data-inputmask="'alias': 'currency'" style="width: 100%; text-align: end" disabled/>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-5" style="padding-top: 5px; font-weight: bold;">Credit: </label>
+                                <div class="col-md-7">
+                                    <input class="form-control" name="TotalCredit" data-inputmask="'alias': 'currency'" style="width: 100%; text-align: end" disabled/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @(Html.Kendo().Grid<webfmis.DTO.Adjustment>()
+                            .Name("detailSF3")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(x => x.JVNumber)
+                                    .Title("JV Number")
+                                    .Filterable(false)
+                                    .Width(150);
+                                columns.Bound(x => x.JVDate)
+                                    .Title("JV Date")
+                                    .Filterable(false)
+                                    .Format("{0:MM/dd/yyyy}")
+                                    .Width(100);
+                                columns.Bound(x => x.Particulars)
+                                    .Title("Particulars")
+                                    .Filterable(false)
+                                    .Width(300);
+                                columns.Bound(x => x.DebitAmount)
+                                    .Title("Debit")
+                                    .Filterable(false)
+                                    .Width(125)
+                                    .Format("{0:n2}")
+                                    .HtmlAttributes(new { @style = "text-align: end" });
+                                columns.Bound(x => x.CreditAmount)
+                                    .Title("Credit")
+                                    .Filterable(false)
+                                    .Width(125)
+                                    .Format("{0:n2}")
+                                    .HtmlAttributes(new { @style = "text-align: end" });
+                            })
+                            .Selectable(x => x.Mode(GridSelectionMode.Single))
+                            .Pageable()
+                            .Editable(editable => editable.Mode(GridEditMode.InCell))
+                            .Scrollable()
+                            .Height(400)
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .Model(model =>
+                                {
+                                    model.Field(p => p.JVNumber).Editable(false);
+                                    model.Field(p => p.JVDate).Editable(false);
+                                    model.Field(p => p.Particulars).Editable(false);
+                                    model.Field(p => p.IsLocked).Editable(false);
+                                    model.Field(p => p.DebitAmount).Editable(false);
+                                    model.Field(p => p.CreditAmount).Editable(false);
+                                })
+                                .PageSize(10)
+                                .Read(read => read.Action("AdjustmentGrid", "TrnBankReconciliation"))
+                        ))
+                </form>
+            </content>
+        </tabstrip-item>
+    </items>
+</kendo-tabstrip>
+
+<script>
+    $header = $(".gridview");
+    $content = $(".recordcontent");
+    $transitionTime = 200;
+
+    $isDirty = false;
+
+    $isSearchFocused = false;
+
+    $Entity = new Object();
+
+    $(".CmdHome").click(function () {
+        location.href = "@Url.Action("Index","Home")";
+    });
+
+    $(".CmdPreview").click(function () {
+        if($("#BankId").val() != null || $("#BankId").val() > 0)
+        {
+            var formData = new Object();
+
+            formData.BankId = document.forms.frmDetail.elements.BankId.value; 
+            formData.DateStart = document.forms.frmDetail.elements.DateStart.value;
+            formData.DateEnd = document.forms.frmDetail.elements.DateEnd.value;
+            formData.EndingBalancePerBank = document.forms.frmDetail.elements.EndingBalancePerBank.value;
+            formData.TotalDepositInTransit = document.forms.frmDetail.elements.TotalDepositInTransit.value;
+            formData.TotalOutstandingWithdrawals = document.forms.frmDetail.elements.TotalOutstandingWithdrawals.value;
+            formData.AdjustedEndingBalancePerBank = document.forms.frmDetail.elements.AdjustedEndingBalancePerBank.value;
+            formData.EndingBalancePerBook = document.forms.frmDetail.elements.EndingBalancePerBook.value;
+            formData.TotalDebit = document.forms.frmDetail.elements.TotalDebit.value;
+            formData.TotalCredit = document.forms.frmDetail.elements.TotalCredit.value;
+            formData.AdjustedEndingBalancePerBooks = document.forms.frmDetail.elements.AdjustedEndingBalancePerBooks.value;
+            formData.PreparedById = document.forms.frmDetail.elements.PreparedById.value;
+            formData.CheckedById = document.forms.frmDetail.elements.CheckedById.value;
+            formData.ApprovedById = document.forms.frmDetail.elements.ApprovedById.value;
+
+            $.ajax({
+                url: "@(Url.Action("Print", "TrnBankReconciliation"))",
+                type: "POST",
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { "bankRecon": formData },
+                success: function (data)
+                {
+                    window.open(window.location.origin + "/RepBankReconciliation.html?Id=" + data,'_blank').focus()
+                }
+            });
+        }
+    });
+
+    function EntityComboxChange(e)
+    {
+        if (this.element[0].id == "BankId")
+        {
+            RefreshBankRecon();
+        }
+    }
+
+    function DateChange() 
+    {
+        RefreshBankRecon();
+    }
+
+    function EndingBalancePerBankChanged()
+    {
+        RefreshBankRecon();
+    }
+
+    function RefreshBankRecon()
+    {
+        var grid = $("#detailSF1").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            //filter: 
+            //{
+            //    logic: "and",
+            //    filters: [
+            //        { field: "BankId", operator: "eq", value: $("#BankId").val() },
+            //        { field: "DateStart", operator: "eq", value: $("#DateStart").val() },
+            //        { field: "DateEnd", operator: "eq", value: $("#DateEnd").val() }
+            //    ]
+            //},
+            //data: [
+            //    { name: "Tea", category: "Beverages" },
+            //    { name: "Coffee", category: "Beverages" },
+            //    { name: "Ham", category: "Food" }
+            //  ],
+            data: 
+            {
+                BankId: $("#BankId").val(),
+                DateStart: $("#DateStart").val(),
+                DateEnd: $("#DateEnd").val(),
+            }
+        });
+
+        var grid1 = $("#detailSF2").data("kendoGrid");
+
+        grid1.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            data: 
+            {
+                BankId: $("#BankId").val(),
+                DateStart: $("#DateStart").val(),
+                DateEnd: $("#DateEnd").val(),
+            }
+        });
+
+        var grid2 = $("#detailSF3").data("kendoGrid");
+
+        grid2.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            data: 
+            {
+                BankId: $("#BankId").val(),
+                DateStart: $("#DateStart").val(),
+                DateEnd: $("#DateEnd").val(),
+            }
+        });
+
+        if($("#BankId").val() != 0 && $("#BankId").val() != null && $("#BankId").val() != undefined)
+        {
+            $.ajax({
+                url: "@(Url.Action("GetBankReconciliationValues", "TrnBankReconciliation"))",
+                type: "POST",
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { "BankId": $("#BankId").val(), "dateStart": $("#DateStart").val(), "dateEnd": $("#DateEnd").val(), "endingBalanceAsPerBank": document.forms.frmDetail.elements.EndingBalancePerBank.value },
+                success: function (data)
+                {
+                    //$("#TotalDepositInTransit").val(data.DepositInTransit);
+                    //$("#TotalOutstandingWithdrawals").val(data.OutstandingWithdrawal);
+                    //$("#AdjustedEndingBalancePerBank").val(data.BankAdjustedBalance);
+                    //$("#EndingBalancePerBook").val(data.EndingBalancePerBook);
+                    //$("#TotalDebit").val(data.Debit);
+                    //$("#TotalCredit").val(data.Credit);
+                    //$("#AdjustedEndingBalancePerBooks").val(data.AdjustedEndingBalanceBook);
+
+                    document.forms.frmDetail.elements.TotalDepositInTransit.value = data.DepositInTransit;
+                    document.forms.frmDetail.elements.TotalOutstandingWithdrawals.value = data.OutstandingWithdrawal;
+                    document.forms.frmDetail.elements.AdjustedEndingBalancePerBank.value = data.BankAdjustedBalance;
+                    document.forms.frmDetail.elements.EndingBalancePerBook.value = data.EndingBalancePerBook;
+                    document.forms.frmDetail.elements.TotalDebit.value = data.Debit;
+                    document.forms.frmDetail.elements.TotalCredit.value = data.Credit;
+                    document.forms.frmDetail.elements.AdjustedEndingBalancePerBooks.value = data.AdjustedEndingBalanceBook;
+
+                    var totalDepositAmt = 0;
+                    var sf1GridData = $("#detailSF1").data().kendoGrid.dataSource._data;
+                    var depositGrid = sf1GridData.map(({Amount}) => ({Amount}));
+
+                    depositGrid.forEach(function (obj)
+                    {
+                        totalDepositAmt += obj.Amount;
+                    });
+
+                    document.forms.frmDeposits.elements.TotalDepositAmount.value = totalDepositAmt;
+                    document.forms.frmDeposits.elements.TotalInTransit.value =  data.DepositInTransit;
+
+                    var totalWithdrawalAmt = 0;
+                    var sf2GridData = $("#detailSF2").data().kendoGrid.dataSource._data;
+                    var withdrawal = sf2GridData.map(({Amount}) => ({Amount}));
+
+                    withdrawal.forEach(function (obj)
+                    {
+                        totalWithdrawalAmt += obj.Amount;
+                    });
+
+                    document.forms.frmWithdrawals.elements.TotalWithdrawalAmount.value = totalWithdrawalAmt;
+                    document.forms.frmWithdrawals.elements.TotalOutstanding.value =  data.OutstandingWithdrawal;
+
+                    document.forms.frmAdjustments.elements.TotalDebit.value =  data.Debit;
+                    document.forms.frmAdjustments.elements.TotalCredit.value =  data.Credit;
+                }
+            });
+        }
+    }
+</script>
+
+<script src="~/js/Util.js"></script>

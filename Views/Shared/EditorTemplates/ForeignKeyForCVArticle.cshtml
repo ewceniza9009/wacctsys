@@ -1,0 +1,27 @@
+﻿@model object
+@(
+Html.Kendo().ComboBoxFor(m => m)
+    .Placeholder("Article")
+    .DataTextField("Article")
+    .DataValueField("Id")
+    .HtmlAttributes(new { style = "width:100%;" })
+    .Filter(FilterType.Contains)
+    .AutoBind(true)
+    .MinLength(3)
+    .Template("<span style='width: 300px;'>#: data.Article#</span><span style='width: 100px; text-align: end;'>#: data.ArticleType#</span>")
+    .DataSource(source =>
+    {
+        source.Read(read =>
+        {
+            read.Action("LineAccountArticles", "TrnDisbursement").Data("ArticleIdRouteValues");
+        })
+        .ServerFiltering(false);
+    })
+)
+
+<script>
+    var widthVal = "460";
+
+    $("#ArticleId_listbox").css("width", widthVal);
+    $("#ArticleId_listbox").parents("div").css("width", widthVal);
+</script>

@@ -1,0 +1,1020 @@
+﻿@{
+    ViewData["Title"] = " - Sales Invoice";
+}
+
+<style>
+    .cmd-buttons {
+        margin-left: 10px;
+        width: 90px;
+    }
+
+    .recordcontent {
+        display: none;
+        padding: 5px;
+    }
+
+    .k-floating-label-container {
+        width: 100%;
+    }
+
+    /*.modal-dialog {
+        max-width: 1500px;
+    }*/
+
+    #modal-dialog-journal {
+        max-width: 1500px;
+    }
+
+    #modal-dialog-lineDetail {
+        max-width: 1250px;
+    }
+</style>
+
+<div class="lookupPanel">
+    <div class="input-group">
+        <input type="text" class="form-control" placeholder="Search..." id="search">
+        <button type="button"
+                class="btn bg-transparent"
+                style="margin-left: -40px; z-index: 90;"
+                id="clearSearch">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+</div>
+
+<div class="gridview">
+    <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+        <div class="col-md-6">
+            <h5 style="margin-top: 10px;"><i class="fas fa-file-invoice"></i> Sales Invoice</h5>
+        </div>
+
+        <div class="col-md-6">
+            <div class="CmdHome">
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button">
+                    <span class="btn-label">
+                        <i class="fa fa-arrow-left"></i>
+                    </span>Home
+                </button>
+            </div>
+
+            <div class="CmdAdd">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanAdd)
+                {
+                    <button class="btn btn-primary cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-plus-square"></i>
+                        </span>
+                        Add
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @(Html.Kendo().Grid<webfmis.Models.TrnSalesInvoice>()
+    .Name("mainList")
+    .Columns(columns => {
+
+        if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanEdit)
+        {
+            columns.Command(command => command.Custom("Detail")
+               .Click("CmdDetail"))
+               .Width(100);
+        }
+        else
+        {
+            columns.Command(command => command.Custom("Detail")
+               .Click("CmdDetail"))
+               .HtmlAttributes(new { @class = "k-state-disabled" })
+               .Width(100);
+        }
+
+        columns.Bound(x => x.Id).Filterable(false).Width(100).Hidden();
+        columns.Bound(x => x.Sinumber).Title("SI Number").Filterable(x => x.Cell(y => y.Operator("Contains"))).Width(150);
+        columns.Bound(x => x.Sidate).Title("Date").Format("{0:MM/dd/yyyy}").Filterable(x => x.Cell(y => y.Operator("Contains"))).Width(200);
+        columns.Bound(x => x.CustomerName).Title("Customer").Width(300);
+        columns.Bound(x => x.DocumentReference).Title("Doc Ref").Width(150);
+        columns.Bound(x => x.Amount).
+            Title("Amount")
+            .Format("{0:n2}")
+            .Width(125)
+            .HtmlAttributes(new { @style = "text-align: end" });
+        columns.Bound(x => x.PaidAmount)
+            .Title("Paid Amount")
+            .Format("{0:n2}")
+            .Width(125)
+            .HtmlAttributes(new { @style = "text-align: end" });
+        columns.Bound(x => x.IsLocked).Title("L")
+            .ClientTemplate("<input type='checkbox' disabled #= IsLocked ? checked='checked' : '' # />")
+            .Filterable(false)
+            .Width(50);
+    })
+    .Selectable(x => x.Mode(GridSelectionMode.Single))
+    .Pageable()
+    .Sortable()
+    .Scrollable()
+    .Filterable()
+    .HtmlAttributes(new { style = "height:700px;" })
+    //.Filterable(x => x.Mode(GridFilterMode.Row))
+    .Filterable()
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .PageSize(10)
+        .ServerOperation(true)
+        .Read(read => read.Action("SalesInvoiceList", "TrnSalesInvoice"))
+        .Filter(x => x.Add( a=> a.Sidate).IsEqualTo(DateTime.Now.Date))
+    ))
+
+</div>
+
+<div class="recordcontent">
+    <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+        <div class="col-md-6">
+            <h5 style="margin-top: 10px;"><i class="fas fa-file-invoice"></i> Sales Invoice Detail</h5>
+        </div>
+
+        <div class="col-md-6">
+            <div class="CmdBack">
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button">
+                    <span class="btn-label">
+                        <i class="fa fa-arrow-left"></i>
+                    </span>
+                    Back
+                </button>
+            </div>
+
+            <div class="CmdSave">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanLock)
+                {
+                    <button class="btn btn-primary cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-lock"></i>
+                        </span>
+                        Save
+                    </button>
+                }
+            </div>
+
+            <div class="CmdDelete">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanDelete)
+                {
+                    <button class="btn btn-danger cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 100px">
+                        <span class="btn-label">
+                            <i class="fa fa-trash"></i>
+                        </span>
+                        Delete
+                    </button>
+                }
+            </div>
+
+            <div class="CmdPreview">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanPrint)
+                {
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-print"></i>
+                        </span>
+                        Print
+                    </button>
+                }
+            </div>
+
+            <div class="CmdJournal">
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button"
+                        style="width: 50px">
+                    <span class="btn-label">
+                        <i class="fas fa-book"></i>
+                    </span>
+                </button>
+            </div>
+
+            @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanEdit)
+            {
+                <div class="CmdNext">
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 50px">
+                        <span class="btn-label">
+                            <i class="fa fa-arrow-right"></i>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="CmdPrev">
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 50px">
+                        <span class="btn-label">
+                            <i class="fa fa-arrow-left"></i>
+                        </span>
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="recordcontentform" />
+</div>
+
+<section id="journalSection">
+    <div class="modal fade" id="journalModal" data-bs-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div id="modal-dialog-journal" class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-book"></i> Journal Entries</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="journalcontentform" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="lineDetailSection">
+    <div class="modal fade" id="lineDetailModal" data-bs-backdrop="static" tabindex="-" role="dialog" aria-labelledby="lineModalLabel" aria-hidden="true">
+        <div id="modal-dialog-lineDetail" class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="lineModalLabel"><i class="fas fa-file-invoice"></i> Sales Invoice Line Detail</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="linecontentform" />
+                </div>
+                <div class="modal-footer">
+                    <div class="CmdSaveRRLine">
+                        <button class="btn btn-primary cmd-buttons float-right btn-labeled"
+                                type="button" onclick="SaveSILine()">
+                            <i class="fas fa-clipboard-check"></i> Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+    $header = $(".gridview");
+    $content = $(".recordcontent");
+    $transitionTime = 200;
+
+    $isDirty = false;
+
+    $isSearchFocused = false;
+
+    $hasErrors = false;
+
+    $Entity = new Object();
+
+    $UserRights = JSON.parse('@Html.Raw(Json.Serialize(ViewData["UserRights"]))');
+
+    $SelectedLine = new Object();
+
+    $isNewLine = new Object();
+
+    $(".CmdHome").click(function () {
+        location.href = "@Url.Action("Index","Home")";
+    });
+
+    $(".CmdAdd").click(function () {
+        $header.hide($transitionTime);
+        $content.show($transitionTime);
+
+        $("#recordcontentform").empty();
+        $("#recordcontentform").load("/TrnSalesInvoice/Add");
+    });
+
+    function CmdDetail(e)
+    {
+        e.preventDefault();
+
+        var grid = $("#mainList").getKendoGrid();
+        var item = grid.dataItem($(e.target).closest("tr"));
+
+        grid.select($(e.target).closest("tr"));
+
+        $Entity = item;
+
+        $header.hide($transitionTime);
+        $content.show($transitionTime);
+
+        loadPartialView(item.Id);
+    }
+
+    $(".CmdBack").click(function () {
+        if ($isDirty) {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        Save();
+
+                        $header.show($transitionTime);
+                        $content.hide($transitionTime);
+                    }
+                    else {
+                        if (result.dismiss == "cancel") {
+                            $header.show($transitionTime);
+                            $content.hide($transitionTime);
+
+                            loadPartialView($Entity.Id);
+                        }
+                        else {
+                            $isDirty = true;
+                        }
+                    }
+                })
+
+            if (typeof e !== null) {
+                e.preventDefault();
+            }
+        }
+
+        $content.hide($transitionTime);
+        $header.show($transitionTime);
+    });
+
+    $(".CmdSave").click(function (e) {
+        Save(e)
+
+        if($UserRights.CanLock)
+        {
+            Swal.fire({
+                icon: 'success',
+                text: 'Record saved successfully!',
+                showConfirmButton: true,
+            })
+        }
+    });
+
+     $(".CmdDelete").click(function () {
+        Swal.fire({
+            icon: 'error',
+            text: "Do you want to delete '" + $Entity.Sinumber + "'?",
+            showCancelButton: true,
+            confirmButtonText: "Delete",
+            cancelButtonText: "No"
+        })
+        .then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "@(Url.Action("Delete", "TrnSalesInvoice"))",
+                    type: "DELETE",
+                    dataType: 'json',
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    data: { "Id": $Entity.Id },
+                    success: function ()
+                    {
+                        var grid = $("#mainList").data("kendoGrid");
+                        grid.dataSource.read();
+
+                        $content.hide($transitionTime);
+                        $header.show($transitionTime);
+
+                        $isDirty = false;
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        Swal.fire({
+                            icon: 'warning',
+                            text: 'An error occured, Purchase order has been used in receiving!',
+                            showConfirmButton: true,
+                        })
+                    }
+                });
+            }
+            else if (result.isDenied)
+            {
+                //Do nothing...
+            }
+        })
+     });
+
+    $(".CmdJournal").click(function (e) {
+
+        $("#journalcontentform").empty();
+        $("#journalcontentform").load("/TrnJournal/Index?TrsType=SI&Id=" + $("#Id").val());
+
+        $("#journalModal").modal("show");
+    });
+
+
+    $(".CmdPreview").click(function () {
+        window.open(window.location.origin + "/TrnSI.html?SIId=" + $("#Id").val(),'_blank').focus()
+     });
+
+
+    $("#clearSearch").click(function () {
+        $("#search").val("");
+
+        var grid = $("#mainList").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            filter: { field: "SINumber", operator: "contains", value: $("#search").val() }
+        })
+    });
+
+    $("#search").on("click", function (e) {
+        if ($isDirty) {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        Save();
+
+                        $header.show($transitionTime);
+                        $content.hide($transitionTime);
+                    }
+                    else {
+                        if (result.dismiss == "cancel") {
+                            $header.show($transitionTime);
+                            $content.hide($transitionTime);
+
+                            loadPartialView($Entity.Id);
+                        }
+                        else {
+                            $isDirty = true;
+                        }
+                    }
+                })
+
+            e.preventDefault();
+            return;
+        }
+
+        $header.show($transitionTime);
+        $content.hide($transitionTime);
+    })
+
+    $("#search").change(function () {
+        var grid = $("#mainList").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            filter: { field: "SINumber", operator: "contains", value: $("#search").val() }
+        })
+            .then(function (e) {
+                if (grid.dataSource.data().length == 1) {
+                    $header.hide($transitionTime);
+                    $content.show($transitionTime);
+
+                    loadPartialView(grid.dataSource.view()[0].Id);
+                }
+            });
+    });
+
+
+    $(".CmdPrev").click(function () {
+        if ($isDirty) {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        Save();
+                    }
+                    else {
+                        if (result.dismiss == "cancel") {
+                            loadPartialView($Entity.Id);
+
+                            turnPage("Prev")
+                        }
+                        else {
+                            $isDirty = true;
+                        }
+                    }
+                })
+
+            e.preventDefault();
+        }
+
+        turnPage("Prev")
+    });
+
+    $(".CmdNext").click(function () {
+        if ($isDirty) {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        Save();
+                    }
+                    else {
+                        if (result.dismiss == "cancel") {
+                            loadPartialView($Entity.Id);
+
+                            turnPage("Next");
+                        }
+                        else {
+                            $isDirty = true;
+                        }
+                    }
+                })
+
+            e.preventDefault();
+        }
+
+        turnPage("Next");
+    });
+</script>
+
+<script>
+    function AddSILine() {
+        $isNewLine = true;
+
+        loadPartialViewLineDetail($Entity.Id, $("#CustomerId").data().kendoComboBox.value())
+
+        $("#lineDetailModal").modal("show");
+    }
+
+    function CmdDetailSILine(e) {
+        $isNewLine = false;
+
+        e.preventDefault();
+
+        var grid = $("#detailSF").getKendoGrid();
+        var item = grid.dataItem($(e.target).closest("tr"));
+
+        grid.select($(e.target).closest("tr"));
+
+        $SelectedLine = item;
+
+        loadPartialViewLineDetailDetail(item);
+
+        $("#lineDetailModal").modal("show");
+    }
+
+    function CmdDeleteSILine(e) {
+        $isDirty = true;
+
+        var grid = $("#detailSF").getKendoGrid();
+        var item = grid.dataItem($(e.target).closest("tr"));
+
+        Swal.fire({
+            icon: 'error',
+            text: "Do you want to delete the item?",
+            showCancelButton: true,
+            confirmButtonText: "Delete"
+        })
+            .then((result) => {
+                if (result.isConfirmed) {
+
+                    item.set("IsDeleted", true);
+
+                    grid.dataSource.filter({ field: "IsDeleted", operator: "eq", value: false });
+                }
+            })
+    }
+
+    function EntityComboxChange(e) {
+        $isDirty = true;
+
+        if (this.element[0].id == "LineItemId") {
+            var selectedItem = $("#LineItemId").data("kendoComboBox").listView._dataItems[0];
+
+            if (selectedItem != undefined) {
+                $.ajax({
+                    url: "@(Url.Action("GetArticleInventoryId", "TrnSalesInvoice"))",
+                    type: "GET",
+                    dataType: 'json',
+                    data: { "branchId": document.forms.frmDetail.elements.BranchId.value, "itemId": $("#LineItemId").data("kendoComboBox").value() },
+                    success: function (data)
+                    {
+                        var imgSrc = "";
+
+                        if (selectedItem.ArticleImage == null) {
+                            imgSrc = "/itemImages/no-image.png";
+                        }
+                        else
+                        {
+                            imgSrc = "/itemImages/" + selectedItem.ArticleImage;
+                        }
+
+                        $("#LineUnitId").data("kendoComboBox").value(selectedItem.UnitId);
+                        $("#LineUnitId").data("kendoComboBox").dataSource.read();
+                        $("#LineItemInventoryId").data("kendoComboBox").value(data);
+                        $("#LineItemInventoryId").data("kendoComboBox").dataSource.read();
+                        $("#LineBaseUnitId").data("kendoComboBox").value(selectedItem.BaseUnitId);
+                        $("#LineBaseUnitId").data("kendoComboBox").dataSource.read();
+                        $("#LineVatId").data("kendoComboBox").value(selectedItem.VatId);
+                        $("#LineVatId").data("kendoComboBox").dataSource.read();
+
+                        $("#ArticleImagePath").attr("src", imgSrc);
+
+                        document.forms.frmLineDetail.elements.LinePrice.value = selectedItem.Price;
+
+                        ComputeNetPrice();
+                    }
+                })
+            }
+        }
+
+        if (this.element[0].id == "LineUnitId") {
+            var selectedUnit = $("#LineUnitId").data("kendoComboBox").listView._dataItems[0];
+
+            if (selectedUnit != undefined) {
+                ComputeBaseUnit();
+            }
+        }
+
+        if (this.element[0].id == "LineDiscountId") {
+            var selectedDiscount = $("#LineDiscountId").data("kendoComboBox").listView._dataItems[0];
+
+            if (selectedDiscount != undefined) {
+                document.forms.frmLineDetail.elements.LineDiscountRate.value = selectedDiscount.DiscountRate;
+
+                if (selectedDiscount.Discount != "VARIABLE DISCOUNT") {
+                    document.getElementById("LineDiscountRateId").disabled = true;
+                }
+                else
+                {
+                    document.getElementById("LineDiscountRateId").disabled = false;
+                }
+
+                ComputeNetPrice();
+            }
+        }
+
+        if (this.element[0].id == "LineVatId") {
+            var selecteVat = $("#LineVatId").data("kendoComboBox").listView._dataItems[0];
+
+            if (selecteVat != undefined) {
+                ComputeTax();
+            }
+        }
+    }
+
+    function DateChange() {
+        $isDirty = true;
+    }
+
+    function QuantityChange() {
+        $isDirty = true;
+
+        ComputeNetPrice();
+    }
+
+    function PriceChange() {
+        $isDirty = true;
+
+        ComputeNetPrice();
+    }
+
+    function IsLockedChanged() {
+        $isDirty = true;
+    }
+</script>
+
+@*Main Methods*@
+<script>
+    window.addEventListener('beforeunload', function (e) {
+        if ($isDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function Save(e)
+    {
+        if($UserRights.CanLock)
+        {
+            var result = "";
+            var grid = $("#mainList").data("kendoGrid");
+
+            var frmDetail = $("#frmDetail");
+
+            var formData = GetFormData(frmDetail);
+
+            formData.IsLocked = $("#IsLocked")[0].checked;
+
+            var detailSFGrid = $("#detailSF").getKendoGrid();
+
+            detailSFGrid.dataSource.filter({});
+
+            var detailSFGridData = $("#detailSF").data().kendoGrid.dataSource._data;
+            var detailSFData = detailSFGridData.map(({ Id, ItemId, ItemInventoryId, Particulars, Quantity, UnitId, Price, DiscountId, DiscountRate, DiscountAmount, NetPrice, Amount, Vatid, Vatpercentage, Vatamount, BaseUnitId, BaseQuantity, BasePricet, ItemName, ItemInventoryCode, UnitName, VatInfo, UnitConversionInfo, IsDeleted }) => ({ Id, ItemId, ItemInventoryId, Particulars, Quantity, UnitId, Price, DiscountId, DiscountRate, DiscountAmount, NetPrice, Amount, Vatid, Vatpercentage, Vatamount, BaseUnitId, BaseQuantity, BasePricet, ItemName, ItemInventoryCode, UnitName, VatInfo, UnitConversionInfo, IsDeleted }));
+
+             $.ajax({
+                url: "@(Url.Action("Save", "TrnSalesInvoice"))",
+                type: "POST",
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { "data": formData, "dataSub": detailSFData },
+                success: function (data)
+                {
+                    grid.dataSource.read();
+
+                    loadPartialView(data.Id);
+
+                    $isDirty = false;
+                    $hasErrors = false;
+                 },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     Swal.fire({
+                         icon: 'warning',
+                         text: 'An error occured!',
+                         showConfirmButton: true,
+                     })
+                 }
+             });
+        }
+        else
+        {
+            Swal.fire({
+                icon: 'info',
+                text: 'Save not successful, User does not have rights!',
+                showConfirmButton: true,
+            })
+        }
+    }
+
+    function turnPage(action)
+    {
+        $.ajax({
+            url: "TrnSalesInvoice/" + action,
+            type: "GET",
+            dataType: 'json',
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            data: { "Id": $Entity.Id },
+            success: function (data)
+            {
+                if (data != null)
+                {
+                    $Entity = data;
+
+                    loadPartialView(data.Id);
+                }
+            }
+        });
+    }
+
+    function loadPartialView(id) {
+        $("#recordcontentform").empty();
+        $("#recordcontentform").load("/TrnSalesInvoice/SalesInvoiceDetail?Id=" + id);
+    }
+
+    function loadPartialViewLineDetail(id, customerId)
+    {
+        $("#linecontentform").empty();
+        $("#linecontentform").load("/TrnSalesInvoice/AddSILine?siId=" + id + "&customerId=" + customerId);
+    }
+
+    function loadPartialViewLineDetailDetail(item)
+    {
+        var data = JSON.parse(JSON.stringify(item));
+
+        $("#linecontentform").empty();
+        $("#linecontentform").load("/TrnSalesInvoice/DetailSILine", { siLine: data });
+    }
+</script>
+
+@*Detail Methods*@
+<script>
+    function ComputeNetPrice()
+    {
+        $.ajax({
+            url: "/TrnSalesInvoice/ComputeNetPrice",
+            dataType: 'json',
+            data: {
+                "vatId": $("#LineVatId").data("kendoComboBox").value(),
+                "discountId": $("#LineDiscountId").data("kendoComboBox").value(),
+                "grossPrice": document.forms.frmLineDetail.elements.LinePrice.value,
+                "discountRate": parseFloat(document.forms.frmLineDetail.elements.LineDiscountRate.value)
+            },
+            success: function (data) {
+                document.forms.frmLineDetail.elements.LineDiscountAmount.value = data.DiscountAmount;
+                document.forms.frmLineDetail.elements.LineNetPrice.value = data.NetPrice;
+
+                ComputeLineAmount();
+            }
+        });
+    }
+
+    function ComputeLineAmount() {
+        $("#LineAmount").val($("#LineQuantity").val() * $("#LineNetPrice").val());
+
+        var qty = document.forms.frmLineDetail.elements.LineQuantity.value;
+        var netPrice = document.forms.frmLineDetail.elements.LineNetPrice.value;
+
+        document.forms.frmLineDetail.elements.LineAmount.value = cdbl(qty) * cdbl(netPrice);
+
+        ComputeTax();
+    }
+
+    function ComputeBaseUnit() {
+        $.ajax({
+            url: "/TrnSalesInvoice/ComputeBaseUnit",
+            dataType: 'json',
+            data: {
+                "itemId": $("#LineItemId").data("kendoComboBox").value(),
+                "unitId": $("#LineUnitId").data("kendoComboBox").value(),
+                "quantity": document.forms.frmLineDetail.elements.LineQuantity.value,
+                "amount": document.forms.frmLineDetail.elements.LineAmount.value
+            },
+            success: function (data) {
+                $("#LineBaseUnitId").data("kendoComboBox").value(data.BaseUnitId);
+                document.forms.frmLineDetail.elements.LineBaseQuantity.value = data.BaseQuantity;
+                document.forms.frmLineDetail.elements.LineBasePrice.value = data.BasePrice;
+            }
+        });
+    }
+
+    function ComputeTax() {
+        $.ajax({
+            url: "/TrnSalesInvoice/ComputeTax",
+            dataType: 'json',
+            data: {
+                "vatId": $("#LineVatId").data("kendoComboBox").value(),
+                "quantity": document.forms.frmLineDetail.elements.LineQuantity.value,
+                "netPrice": document.forms.frmLineDetail.elements.LineNetPrice.value,
+                "amount": document.forms.frmLineDetail.elements.LineAmount.value
+            },
+            success: function (data) {
+                document.forms.frmLineDetail.elements.LineVatRate.value = data.VatPercentage;
+                document.forms.frmLineDetail.elements.LineVatAmount.value = data.VatAmount;
+
+                if (data.IsInclusive != true) {
+                    document.forms.frmLineDetail.elements.LineAmount.value = data.Amount;
+                }
+
+                ComputeBaseUnit();
+            }
+        });
+    }
+
+    function UnitIdRouteValues(e) {
+        var row = $("#detailSF").find(".k-edit-cell").parent();
+        var grid = $("#detailSF").data("kendoGrid");
+
+        var item = grid.dataItem(row);
+
+        if (item != null) {
+            return {
+                articleId: item.ItemId
+            };
+        }
+
+        return {};
+    }
+
+    function SaveSILine() {
+        if ($isNewLine == true) {
+            var grid = $("#detailSF").getKendoGrid();
+            var newData = new Object();
+
+            $.ajax({
+                url: "/TrnSalesInvoice/GetSILineInfos",
+                dataType: 'json',
+                data: {
+                    "itemId": $("#LineItemId").data("kendoComboBox").value(),
+                    "itemInventoryId": $("#LineItemInventoryId").data("kendoComboBox").value(),
+                    "unitId": $("#LineUnitId").data("kendoComboBox").value(),
+                    "discountId": $("#LineDiscountId").data("kendoComboBox").value(),
+                    "vatId": $("#LineVatId").data("kendoComboBox").value(),
+                    "baseUnitId": $("#LineBaseUnitId").data("kendoComboBox").value()
+                },
+                success: function (data) {
+
+                    
+                    var valItemName = data.Item;
+                    var valInventoryCode = data.InventoryCode;
+                    var valUnit = data.Unit;
+                    var valVatInfo = document.forms.frmLineDetail.elements.LineVatRate.value + " " + data.Vat + " => " + document.forms.frmLineDetail.elements.LineVatAmount.value;
+                    var valUnitConversionInfo = document.forms.frmLineDetail.elements.LineBaseQuantity.value + " " + data.BaseUnit + " Price: " + document.forms.frmLineDetail.elements.LineBasePrice.value;
+
+                    newData =
+                    {
+                        Id: document.forms.frmLineDetail.elements.LineId.value,
+                        ItemId: document.forms.frmLineDetail.elements.LineItemId.value,
+                        ItemInventoryId: document.forms.frmLineDetail.elements.LineItemInventoryId.value,
+                        Particulars: document.forms.frmLineDetail.elements.LineParticulars.value,
+                        Quantity: document.forms.frmLineDetail.elements.LineQuantity.value,
+                        UnitId: document.forms.frmLineDetail.elements.LineUnitId.value,
+                        Price: document.forms.frmLineDetail.elements.LinePrice.value,
+                        DiscountId: document.forms.frmLineDetail.elements.LineDiscountId.value,
+                        DiscountRate: document.forms.frmLineDetail.elements.LineDiscountRate.value,
+                        DiscountAmount: document.forms.frmLineDetail.elements.LineDiscountAmount.value,
+                        NetPrice: document.forms.frmLineDetail.elements.LineNetPrice.value,
+                        Amount: document.forms.frmLineDetail.elements.LineAmount.value,
+                        Vatid: document.forms.frmLineDetail.elements.LineVatId.value,
+                        Vatpercentage: document.forms.frmLineDetail.elements.LineVatRate.value,
+                        Vatamount: document.forms.frmLineDetail.elements.LineVatAmount.value,
+                        BaseUnitId: document.forms.frmLineDetail.elements.LineBaseUnitId.value,
+                        BaseQuantity: document.forms.frmLineDetail.elements.LineBaseQuantity.value,
+                        BasePrice: document.forms.frmLineDetail.elements.LineBasePrice.value,
+                        ItemName: valItemName,
+                        ItemInventoryCode: valInventoryCode,
+                        UnitName: valUnit,
+                        VatInfo: valVatInfo,
+                        UnitConversionInfo: valUnitConversionInfo,
+                        IsDeleted: false,
+                    };
+
+                    grid.dataSource.insert(newData);
+                }
+            });
+        }
+        else {
+            $SelectedLine.set("Id", document.forms.frmLineDetail.elements.LineId.value);
+            $SelectedLine.set("ItemId", document.forms.frmLineDetail.elements.LineItemId.value);
+            $SelectedLine.set("ItemInventoryId", document.forms.frmLineDetail.elements.LineItemInventoryId.value);
+            $SelectedLine.set("Particulars", document.forms.frmLineDetail.elements.LineParticulars.value);
+            $SelectedLine.set("Quantity", document.forms.frmLineDetail.elements.LineQuantity.value);
+            $SelectedLine.set("UnitId", document.forms.frmLineDetail.elements.LineUnitId.value);
+            $SelectedLine.set("Price", document.forms.frmLineDetail.elements.LinePrice.value);
+            $SelectedLine.set("DiscountId", document.forms.frmLineDetail.elements.LineDiscountId.value);
+            $SelectedLine.set("DiscountRate", document.forms.frmLineDetail.elements.LineDiscountRate.value);
+            $SelectedLine.set("DiscountAmount", document.forms.frmLineDetail.elements.LineDiscountAmount.value);
+            $SelectedLine.set("NetPrice", document.forms.frmLineDetail.elements.LineNetPrice.value);
+            $SelectedLine.set("Amount", document.forms.frmLineDetail.elements.LineAmount.value);
+            $SelectedLine.set("Vatid", document.forms.frmLineDetail.elements.LineVatId.value);
+            $SelectedLine.set("Vatpercentage", document.forms.frmLineDetail.elements.LineVatRate.value);
+            $SelectedLine.set("Vatamount", document.forms.frmLineDetail.elements.LineVatAmount.value);
+            $SelectedLine.set("BaseUnitId", document.forms.frmLineDetail.elements.LineBaseUnitId.value);
+            $SelectedLine.set("BaseQuantity", document.forms.frmLineDetail.elements.LineBaseQuantity.value);
+            $SelectedLine.set("BasePrice", document.forms.frmLineDetail.elements.LineBasePrice.value);
+            $SelectedLine.set("IsDeleted", false);
+
+            $.ajax({
+                url: "/TrnSalesInvoice/GetSILineInfos",
+                dataType: 'json',
+                data: {
+                    "itemId": $("#LineItemId").data("kendoComboBox").value(),
+                    "itemInventoryId": $("#LineItemInventoryId").data("kendoComboBox").value(),
+                    "unitId": $("#LineUnitId").data("kendoComboBox").value(),
+                    "vatId": $("#LineVatId").data("kendoComboBox").value(),
+                    "baseUnitId": $("#LineBaseUnitId").data("kendoComboBox").value()
+                },
+                success: function (data) {
+                    $SelectedLine.set("ItemName", data.Item);
+                    $SelectedLine.set("ItemInventoryCode", data.InventoryCode);
+                    $SelectedLine.set("UnitName", data.Unit);
+                    $SelectedLine.set("VatInfo", document.forms.frmLineDetail.elements.LineVatRate.value + " " + data.Vat + " => " + document.forms.frmLineDetail.elements.LineVatAmount.value);
+                    $SelectedLine.set("UnitConversionInfo", document.forms.frmLineDetail.elements.LineBaseQuantity.value + " " + data.BaseUnit + " Price: " + document.forms.frmLineDetail.elements.LineBasePrice.value);
+                }
+            });
+        }
+
+        $isNewLine = false;
+
+        $isDirty = true;
+
+        $("#lineDetailModal").modal("toggle");
+    }
+</script>
+
+@*Additionals*@
+<script>
+    function FilterLineUnits() {
+        return {
+            articleId: $("#LineItemId").data().kendoComboBox.value()
+        };
+    }
+</script>
+
+<script src="~/js/Util.js"></script>

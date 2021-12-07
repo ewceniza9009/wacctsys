@@ -1,0 +1,28 @@
+﻿@model object
+
+@(
+Html.Kendo().ComboBoxFor(m => m)
+    .Placeholder("Item")
+    .DataTextField("Article")
+    .DataValueField("Id")
+    .HtmlAttributes(new { style = "width:100%;" })
+    .Filter(FilterType.Contains)
+    .AutoBind(true)
+    .MinLength(1)
+    .Template("<span style='width: 300px;'>#: data.Article#</span><span>#: data.ArticleCode#</span>")
+    .DataSource(source =>
+    {
+        source.Read(read =>
+        {
+            read.Action("LineArticles", "TrnPurchaseOrder");
+        })
+        .ServerFiltering(false);
+    })
+)
+
+<script>
+    var widthVal = "510";
+
+    $("#ItemId_listbox").css("width", widthVal);
+    $("#ItemId_listbox").parents("div").css("width", widthVal);
+</script>

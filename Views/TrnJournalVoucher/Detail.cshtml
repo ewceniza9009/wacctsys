@@ -1,0 +1,300 @@
+﻿@model TrnJournalVoucher
+
+<style>
+    #DebitAmount {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+
+    #CreditAmount {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+</style>
+
+<form id="frmDetail" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Id" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row" hidden="hidden">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="BranchId" placeholder="Branch Id" value="@Model.BranchId" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Branch</label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="BranchName" placeholder="Branch" readonly="true" value="@Model.BranchName" style="width: 200px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">JV Number</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="Jvnumber" placeholder="JV Number" value="@Model.Jvnumber" style="width: 50%; background-color: lightgray;" readonly="true">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">JV Date</label>
+                <div class="col-md-8">
+                    <kendo-datepicker name="Jvdate" placeholder="JV Date" value="@Model.Jvdate" style="width: 200px; text-align:end;" on-change="DateChange" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Manual Code</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="ManualJvnumber" placeholder="Manual Jvnumber" value="@Model.ManualJvnumber" style="width: 200px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Particulars" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <kendo-textarea name="Particulars" placeholder="Particulars" value="@Model.Particulars" rows="2" style="width: 100%">
+                    </kendo-textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Prepared By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="PreparedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.PreparedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnPurchaseOrder")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Checked By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="CheckedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.CheckedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnPurchaseOrder")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Approved By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="ApprovedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.ApprovedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnPurchaseOrder")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Locked</label>
+                <div class="col-md-8">
+                    <input asp-for="IsLocked" name="IsLocked" type="checkbox" checked="@Model.IsLocked" value="@Model.IsLocked" onchange="IsLockedChanged()" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="frmDetailSF">
+    @(Html.Kendo().Grid<webfmis.Models.TrnJournalVoucherLine>()
+        .Name("detailSF")
+        .Columns(columns =>
+        {
+            columns.Command(command => command.Custom("- Delete").Click("CmdDeleteJVLine"))
+                .Width(120);
+            columns.Bound(x => x.Id)
+                .Filterable(false)
+                .Hidden();
+            columns.ForeignKey(x => x.BranchId, a => a.Read(b => b.Action("LineBranches", "TrnJournalVoucher")), "Id", "Branch")
+                .Title("Branch")
+                .Filterable(false)
+                .Width(150)
+                .HtmlAttributes(new { onchange = "BranchChange()" });
+            columns.ForeignKey(x => x.AccountId, a => a.Read(b => b.Action("LineAccounts", "TrnJournalVoucher")), "Id", "Account")
+                .Title("Account")
+                .Filterable(false)
+                .Width(300)
+                .HtmlAttributes(new { onchange = "AccountChange()" });
+            columns.Bound(x => x.ArticleId)
+                .Title("Article")
+                .Filterable(false)
+                .Width(200)
+                .EditorTemplateName("ForeignKeyForJVArticle")
+                .ClientTemplate("#= ArticleTemplate(ArticleId) #")
+                .HtmlAttributes(new { onchange = "ArticleChange()" });
+            columns.Bound(x => x.Particulars)
+                .Title("Particulars")
+                .Filterable(false)
+                .Width(150);
+            columns.Bound(x => x.DebitAmount)
+                .Title("Debit")
+                .Filterable(false)
+                .Width(150)
+                .HtmlAttributes(new { @style = "text-align: end" })
+                .ClientFooterTemplate("<div style='text-align: end'>#=kendo.format(\"{0:n2}\", kendo.parseFloat(sum))#</div>");
+            columns.Bound(x => x.CreditAmount)
+                .Title("Credit")
+                .Filterable(false)
+                .Width(150)
+                .HtmlAttributes(new { @style = "text-align: end;" })
+                .ClientFooterTemplate("<div style='text-align: end'>#=kendo.format(\"{0:n2}\", kendo.parseFloat(sum))#</div>");
+            columns.Bound(x => x.Aprrid)
+                .Title("RR No.")
+                .Filterable(false)
+                .Width(200)
+                .EditorTemplateName("ForeignKeyForJVRRNo")
+                .ClientTemplate("#= RRNoTemplate(Aprrid) #")
+                .HtmlAttributes(new { onchange = "RRNoChange()" });
+            columns.Bound(x => x.Arsiid)
+               .Title("SI No.")
+               .Filterable(false)
+               .Width(200)
+               .EditorTemplateName("ForeignKeyForJVSINo")
+               .ClientTemplate("#= SINoTemplate(Arsiid) #")
+               .HtmlAttributes(new { onchange = "SINoChange()" });
+            columns.Bound(x => x.IsDeleted).Hidden();
+        })
+        .Editable(editable => editable.Mode(GridEditMode.InCell))
+        .ToolBar(x =>
+        {
+            x.Custom().Text("+ Add JV Line").HtmlAttributes(new { onclick = "AddJVLine(); return false;" });
+            x.Custom().Text("Remove RR/SI Defaults").HtmlAttributes(new { onclick = "RemoveJVRRSIDefaults(); false;" });
+        })
+        .Navigatable()
+        .Selectable(x => x.Mode(GridSelectionMode.Single))
+        .Pageable()
+        .Scrollable(x => x.Height("auto"))
+        .Sortable()
+        .DataSource(dataSource => dataSource
+            .Ajax()
+            .Model(model =>
+            {
+                model.Id(p => p.Id);
+                model.Field(p => p.BranchId);
+                model.Field(p => p.AccountId);
+                model.Field(p => p.ArticleId);
+                model.Field(p => p.Particulars);
+                model.Field(p => p.DebitAmount);
+                model.Field(p => p.CreditAmount);
+                model.Field(p => p.Aprrid).DefaultValue(null);
+                model.Field(p => p.Arsiid).DefaultValue(null);
+                model.Field(p => p.IsDeleted);
+            })
+            .Aggregates(x => x.Add(a => a.DebitAmount).Sum())
+            .Aggregates(x => x.Add(a => a.CreditAmount).Sum())
+            .ServerOperation(false)
+            .AutoSync(true)
+            .PageSize(5)
+            .Read(read => read.Action("TrnJournalVoucherLineList", "TrnJournalVoucher", new { JVId = ViewData["JVId"] }))
+    ))
+</form>
+
+<script>
+    var widthVal = "510";
+
+    $("#Articled_listbox").css("width", widthVal);
+    $("#ArticleId_listbox").parents("div").css("width", widthVal);
+
+    function ArticleTemplate(articleId) {
+        var result = "";
+
+        for (let ctr = 0; ctr < articleView.length; ctr++) {
+            if (articleView[ctr].Id === articleId) {
+                result = articleView[ctr].Article;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    function RRNoTemplate(rrId) {
+        var result = "";
+
+        for (let ctr = 0; ctr < rRNosView.length; ctr++) {
+            if (rRNosView[ctr].Id === rrId) {
+                result = rRNosView[ctr].Rrnumber;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    function SINoTemplate(siId) {
+        var result = "";
+
+        for (let ctr = 0; ctr < sINosView.length; ctr++) {
+            if (sINosView[ctr].Id === siId) {
+                result = sINosView[ctr].Sinumber;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    $("#frmDetail").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+
+    $("#frmDetailSF").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+</script>

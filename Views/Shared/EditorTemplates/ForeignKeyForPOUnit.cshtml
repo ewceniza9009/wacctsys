@@ -1,0 +1,17 @@
+﻿@model object
+
+@(
+Html.Kendo().DropDownListFor(m => m)
+    .DataValueField("Id")
+    .DataTextField("Unit")
+    .AutoBind(true)
+    .DataSource(source =>
+    {
+        source.Read(read => 
+        {
+            read.Action("ArticleUnits", "TrnPurchaseOrder").Data("UnitIdRouteValues");
+        })
+        .ServerFiltering(false);
+
+    })
+)

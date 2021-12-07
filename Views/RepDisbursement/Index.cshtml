@@ -1,0 +1,130 @@
+﻿@{
+    ViewData["Title"] = " - Disbursement Report";
+}
+
+<style>
+    .cmd-buttons {
+        margin-left: 10px;
+        width: 90px;
+    }
+</style>
+
+<div class="row" style="margin-bottom: 5px; margin-top: 5px">
+    <div class="col-md-6">
+        <h5><i class="fas fa-print"></i> Disbursement Report</h5>
+    </div>
+
+    <div class="col-md-6">
+        <div class="CmdHome">
+            <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                    type="button">
+                <span class="btn-label">
+                    <i class="fa fa-arrow-left"></i>
+                </span>Home
+            </button>
+        </div>
+
+        <div class="CmdPreview">
+            @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanPrint)
+            {
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button">
+                    <span class="btn-label">
+                        <i class="fa fa-print"></i>
+                    </span>
+                    Print
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        @(Html.Kendo().ListBox()
+            .Name("CVReportList")
+            .DataValueField("Value")
+            .DataTextField("Text")
+            .HtmlAttributes(new { @style = "width: 100%; height: 800px" })
+            .Selectable(ListBoxSelectable.Single)
+            .Events(ev => ev.Change("ListBoxChange"))
+            .BindTo(ViewBag.Reports)
+        )
+    </div>
+    <div class="col-md-6">
+        <div class="form-group row">
+            <label class="col-md-3" style="padding-top: 5px; font-weight: bold;">Date Start</label>
+            <div class="col-sm-9">
+                <kendo-datepicker name="DateStart" placeholder="Date start" style="width: 200px; text-align:end;" on-change="DateChange" />
+            </div>
+
+        </div>
+
+        <div class="form-group row">
+            <label class="col-md-3" style="padding-top: 5px; font-weight: bold;">Date End</label>
+            <div class="col-sm-9">
+                <kendo-datepicker name="DateEnd" placeholder="Date end" style="width: 200px; text-align:end;" on-change="DateChange" />
+            </div>
+
+        </div>
+
+        <div class="form-group row">
+            <label class="col-md-3" style="padding-top: 5px; font-weight: bold;">Company</label>
+            <div class="col-md-9">
+                <kendo-combobox name="CompanyId" style="width: 90%"
+                                datatextfield="Company"
+                                datavaluefield="Id"
+                                min-length="3"
+                                height="520"
+                                filter="FilterType.Contains"
+                                on-change="EntityComboxChange">
+                    <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                        <transport>
+                            <read url="@Url.Action("Companies", "RepDisbursement")" />
+                        </transport>
+                    </datasource>
+                </kendo-combobox>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $selectedReportId = 0;
+
+    $("#DateStart").val(new Date().toLocaleDateString());
+    $("#DateEnd").val(new Date().toLocaleDateString());
+
+     $(".CmdHome").click(function () {
+        location.href = "@Url.Action("Index","Home")";
+    });
+
+    $(".CmdPreview").click(function () {
+        if ($selectedReportId == 1)
+        {
+            window.open(window.location.origin + "/RepDisbursementSummary.html?DateStart=" + $("#DateStart").val() + "&DateEnd=" + $("#DateEnd").val() + "&CompanyId=" + parseInt($("#CompanyId").data().kendoComboBox.value()), '_blank').focus()
+        }
+
+        if ($selectedReportId == 2) {
+            window.open(window.location.origin + "/RepDisbursementDetail.html?DateStart=" + $("#DateStart").val() + "&DateEnd=" + $("#DateEnd").val() + "&CompanyId=" + parseInt($("#CompanyId").data().kendoComboBox.value()), '_blank').focus()
+        }
+    });
+
+    function ListBoxChange(e) {
+        var element = e.sender.select();
+        var dataItem = e.sender.dataItem(element[0]);
+
+        $selectedReportId = dataItem.Value;
+    }
+
+
+    function DateChange()
+    {
+
+    }
+
+    function EntityComboxChange()
+    {
+
+    }
+</script>

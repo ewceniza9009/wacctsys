@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WAS @ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.6/css/all.css">
+
+    <link href="~/lib/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="~/lib/limonte-sweetalert2/sweetalert2.css" rel="stylesheet" />
+
+    <link href="@Url.Content("~/lib/kendo-ui/styles/kendo.bootstrap-v4.min.css")" rel="stylesheet" type="text/css" />
+
+    <script src="@Url.Content("~/lib/kendo-ui/js/jquery.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/jszip.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/kendo.all.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/kendo.aspnetmvc.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/cultures/kendo.culture.es-ES.min.js")"></script>
+
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abhaya+Libre&family=Alegreya:wght@400;700&family=Arvo&family=Caladea&family=Epilogue:wght@200;400&family=Merriweather&family=Open+Sans:wght@500&family=PT+Sans&family=Ubuntu:wght@300&family=Yellowtail&display=swap" rel="stylesheet">
+</head>
+<body style="background-image: url('imgres/background7.png'); background-size: contain;">
+    <header style="opacity: 95%">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/imgres/wasiconv3.png" width="90" height="45" style="margin-top: -3px" />
+                </a>
+                <button name="sidebar" class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div style="width: 200px">
+                        <kendo-dropdownlist name="BranchId" style="width:100%; margin-top: -1px"
+                                            datatextfield="Branch"
+                                            datavaluefield="Id"
+                                            min-length="3"
+                                            height="520"
+                                            on-change="BranchChange">
+                            <datasource type="DataSourceTagHelperType.Ajax" page-size="80" server-operation="false" >
+                                <transport>
+                                    <read url="@Url.Action("BranchList", "Home")" />
+                                </transport>
+                            </datasource>
+                        </kendo-dropdownlist>
+                    </div>
+                }
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <partial name="_LoginPartial" />
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="btn btn-light" asp-area="" asp-controller="Home" asp-action="Index" style="margin-top: -1px; margin-left: 7px; height: 41px;">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-light" asp-area="" asp-controller="Home" asp-action="Privacy" style="margin-top: -1px; margin-left: 5px; height: 41px;">About</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container" style="background-color: #f9f9f9; padding-top: 25px; margin-top: -20px; ">
+        <div class="page-wrapper chiller-theme">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <button id="show-sidebar" class="btn btn-sm btn-dark">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <nav id="sidebar" class="sidebar-wrapper">
+                    <div class="sidebar-content">
+                        <div class="sidebar-brand">
+                            <a href="#">Menu</a>
+                            <div id="close-sidebar">
+                                <i class="fa fa-times"></i>
+                            </div>
+                        </div>
+
+                        @{
+                            @await Component.InvokeAsync("Menu");
+                        }
+                    </div>
+                </nav>
+            }
+
+            <partial name="_BusyIndicatorPartial" />
+
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <footer class="footer text-muted fixed-bottom" style="background-color: gainsboro; opacity: 95; position: fixed">
+            <div class="container">
+                &copy; 2021 - EWC @*- <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>*@
+            </div>
+        </footer>
+    }
+    else 
+    {
+        <footer class="footer text-muted fixed-bottom" style="background-color:gainsboro; opacity:95; position: fixed">
+            <div class="container">
+                &copy; 2021 - EWC @*- <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>*@
+            </div>
+        </footer>
+    }
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/font-awesome/js/all.js"></script>
+    <script src="~/lib/limonte-sweetalert2/sweetalert2.js"></script>
+    <script src="~/lib/inputmask-5x/dist/jquery.inputmask.js"></script>
+    <script src="~/lib/inputmask-5x/dist/bindings/inputmask.binding.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @RenderSection("Scripts", required: false)
+
+<script>
+    const $sidebar = $(".page-wrapper");
+
+    $(".sidebar-dropdown > a").click(function () {
+        $(".sidebar-submenu").slideUp(200);
+
+        if (
+            $(this)
+                .parent()
+                .hasClass("active")) {
+            $(".sidebar-dropdown").removeClass("active");
+            $(this)
+                .parent()
+                .removeClass("active");
+        }
+        else {
+            $(".sidebar-dropdown").removeClass("active");
+            $(this)
+                .next(".sidebar-submenu")
+                .slideDown(200);
+            $(this)
+                .parent()
+                .addClass("active");
+        }
+
+        var selectedMenu = $("li.sidebar-dropdown.active").attr("id");
+
+        localStorage.setItem("selectedMenu", selectedMenu);
+    });
+
+    $("#close-sidebar").click(function () {
+        $(".page-wrapper").removeClass("toggled");
+
+        localStorage.setItem("toggled", false);
+    });
+
+    $("#show-sidebar").click(function () {
+
+        $(".page-wrapper").addClass("toggled");
+
+        localStorage.setItem("toggled", true);
+    });
+
+    function displayBusyIndicator() {
+        $('.loading').show();
+    }
+
+    function loadMain() {
+        if (localStorage.getItem("toggled") && localStorage.getItem("toggled") == "true") {
+            $sidebar.addClass("toggled");
+
+            if (localStorage.getItem("selectedMenu") == "setup")
+            {
+                $("#setupMenu").slideDown(10);
+            }
+
+            if (localStorage.getItem("selectedMenu") == "activity")
+            {
+                $("#activityMenu").slideDown(10);
+            }
+
+            if (localStorage.getItem("selectedMenu") == "report")
+            {
+                $("#reportMenu").slideDown(10);
+            }
+
+            if (localStorage.getItem("selectedMenu") == "setting")
+            {
+                $("#settingMenu").slideDown(10);
+            }
+        }
+        
+    }
+
+    loadMain();
+
+    $(window).load(function ()
+    {
+        setTimeout(function () {
+            $('.loading').hide();
+        }, 500);
+
+      
+    });
+
+    $(document).ready(function ()
+    {
+        //displayBusyIndicator();
+    });
+
+    window.addEventListener('load', function () {
+        $.ajax({
+            url: "@(Url.Action("ReadSettings", "Home"))",
+            success: function (data)
+            {
+                var view = $("#BranchId").data("kendoDropDownList").listView.dataSource._data;
+                var dataIndex = 0;
+
+                view.forEach(function (item) {
+                    if (item.Id == data.Id)
+                    {
+                        dataIndex = view.indexOf(item);
+                    }
+                });
+
+                $("#BranchId").data("kendoDropDownList").select(dataIndex);
+            }
+        });
+
+        $.ajax({
+            url: "@(Url.Action("DisplayUser", "Home"))",
+            success: function(data)
+            {
+                $("#DisplayUser").text(data);
+            }
+        });
+
+    }, false);
+
+    function BranchChange()
+    {
+        $.ajax({
+            url: "@(Url.Action("WriteSettings", "Home"))",
+            data: { Id: $("#BranchId").val() }
+        });
+
+        window.location = window.location.origin;
+    }
+</script>
+</body>
+</html>

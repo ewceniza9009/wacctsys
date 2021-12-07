@@ -1,0 +1,92 @@
+﻿@model TrnCollection
+
+<form id="frmDownloadCustomerAdvances" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-md-2" style="padding-top: 5px; font-weight: bold;">Customer</label>
+                <div class="col-sm-10">
+                    <kendo-textbox name="CustomerName" placeholder="Customer" readonly="true" value="@Model.CustomerName" style="width: 100%; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="frmDownloadJVLine">
+    @(Html.Kendo().Grid<webfmis.DTO.CustomerAdvance>()
+            .Name("detailSF2")
+            .Columns(columns =>
+            {
+                columns.Command(command => command.Custom("Apply").Click("CmdApplyAdvance"))
+                .Width(100);
+
+                columns.Bound(x => x.AccountCode)
+                    .Title("Acct Code.")
+                    .Filterable(false)
+                    .Width(100);
+                columns.Bound(x => x.Account)
+                    .Title("Account.")
+                    .Filterable(false)
+                    .Width(300);
+                columns.Bound(x => x.Article)
+                    .Title("Article")
+                    .Filterable(false)
+                    .Width(300);
+                columns.Bound(x => x.SumOfDebitAmount)
+                    .Title("Debit")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end"});
+                columns.Bound(x => x.SumOfCreditAmount)
+                    .Title("Credit")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end" });
+                columns.Bound(x => x.Balance)
+                    .Title("Balance")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end" });
+                columns.Bound(x => x.AccountId).Hidden();
+                columns.Bound(x => x.ArticleId).Hidden();
+            })
+            .Selectable(x => x.Mode(GridSelectionMode.Single))
+            .Pageable()
+            .Editable(editable => editable.Mode(GridEditMode.InCell))
+            .Scrollable()
+            .Height(400)
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .Model(model =>
+                {
+                    model.Id(p => p.AccountId);
+                    model.Field(p => p.AccountCode).Editable(false);
+                    model.Field(p => p.Account).Editable(false);
+                    model.Field(p => p.ArticleId).Editable(false);
+                    model.Field(p => p.SumOfDebitAmount).Editable(false);
+                    model.Field(p => p.SumOfCreditAmount).Editable(false);
+                    model.Field(p => p.Balance).Editable(false);
+                })
+                .ServerOperation(true)
+                .PageSize(5)
+                .Read(read => read.Action("CustomerAdvances", "TrnCollection"))
+        ))
+</form>
+
+<script>
+    $(document).ready(function ()
+    {
+        var grid = $("#detailSF2").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            filter: [
+                { field: "ArticleId", operator: "eq", value: $("#CustomerId").val() },
+                { field: "BranchId", operator: "eq", value: $("#BranchId").val() }
+            ]
+        })
+    })
+</script>

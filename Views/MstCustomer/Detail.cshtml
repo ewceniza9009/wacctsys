@@ -1,0 +1,165 @@
+﻿@model MstArticle
+
+<form id="frmDetail" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-8">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Id" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Customer Code</label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="ArticleCode" placeholder="Article Code" readonly="true" value="@Model.ArticleCode" style="width: 150px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Customer</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="Article" placeholder="Article" value="@Model.Article" style="width: 75%">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="ArticleGroupId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Customer Group</label>
+                <div class="col-md-8">
+                    <kendo-multicolumncombobox name="ArticleGroupId"
+                                               datatextfield="ArticleGroup"
+                                               datavaluefield="Id"
+                                               min-length="2"
+                                               height="520"
+                                               value="@Model.ArticleGroupId"
+                                               filter="FilterType.Contains"
+                                               on-change="EntityComboxChange"
+                                               style="width: 310px">
+                        <multicolumncombobox-columns>
+                            <column field="ArticleGroup" title="Article Group" width="200x" />
+                            <column field="Id" title="Id" width="100px" />
+                        </multicolumncombobox-columns>
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("CustomerGroups", "MstCustomer")" />
+                            </transport>
+                        </datasource>
+                    </kendo-multicolumncombobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Account</label>
+                <div class="col-md-8">
+                    <kendo-multicolumncombobox name="AccountId"
+                                               datatextfield="Account"
+                                               datavaluefield="Id"
+                                               min-length="2"
+                                               height="520"
+                                               value="@Model.AccountId"
+                                               filter="FilterType.Contains"
+                                               on-change="EntityComboxChange"
+                                               style="width: 410px">
+                        <multicolumncombobox-columns>
+                            <column field="Account" title="Account" width="300px" />
+                            <column field="AccountCode" title="Code" width="100px" />
+                        </multicolumncombobox-columns>
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Accounts", "MstCustomer")" />
+                            </transport>
+                        </datasource>
+                    </kendo-multicolumncombobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Term</label>
+                <div class="col-md-8">
+                    <kendo-multicolumncombobox name="TermId"
+                                               datatextfield="Term"
+                                               datavaluefield="Id"
+                                               min-length="2"
+                                               height="520"
+                                               value="@Model.TermId"
+                                               filter="FilterType.Contains"
+                                               on-change="EntityComboxChange"
+                                               style="width: 310px">
+                        <multicolumncombobox-columns>
+                            <column field="Term" title="Term" width="200x" />
+                            <column field="NumberOfDays" title="Days" width="100px" />
+                        </multicolumncombobox-columns>
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Terms", "MstCustomer")" />
+                            </transport>
+                        </datasource>
+                    </kendo-multicolumncombobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Address" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <kendo-textbox name="Address" placeholder="Address" value="@Model.Address" style="width: 500px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Contact #</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="ContactNumber" placeholder="Contact Number" value="@Model.ContactNumber" style="width: 200px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Contact Person</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="ContactPerson" placeholder="Account" value="@Model.ContactPerson" style="width: 200px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">TIN</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="TaxNumber" placeholder="Tax Number" value="@Model.TaxNumber" style="width: 200px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Particulars" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <kendo-textbox name="Particulars" placeholder="Particulars" value="@Model.Particulars" style="width: 500px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Locked</label>
+                <div class="col-md-8">
+                    <input asp-for="IsLocked" name="IsLocked" type="checkbox" checked="@Model.IsLocked" value="@Model.IsLocked" onchange="IsLockedChanged()"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    $("#frmDetail").keydown(function (e)
+    {
+        if (isFormDirty(e))
+        {
+            $isDirty = true;
+        }
+    });
+</script>

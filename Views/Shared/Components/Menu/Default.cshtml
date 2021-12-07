@@ -1,0 +1,122 @@
+﻿@model List<webfmis.Models.WebMenu>
+<div id="model">
+    <form asp-controller="Menu" asp-action="Search" data-ajax-complete="onComplete"
+          data-ajax-failure="onFailed" data-ajax-success="onSuccess"
+          data-ajax="true" 	data-ajax-mode="replace" data-ajax-update="model" data-ajax-method="POST">
+        <div class="sidebar-menu">
+            <ul>
+                @*<li class="header-menu">
+                    <span>System Navigation</span>
+                </li>*@
+                <li class="sidebar-dropdown" id="setup">
+                    <a href="#">
+                        <i class="fa fa-list"></i>
+                        <span>Setup</span>
+                    </a>
+                    <div class="sidebar-submenu" id="setupMenu">
+                        <ul>
+                            @foreach (var m in Model.OrderBy(x => x.SortId))
+                            {
+                                if (m.Category == "Setup")
+                                {
+                                    <li>
+                                        <a href="@Url.Action(m.Action, m.Controller)">@m.Menu</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </li>
+                <li class="sidebar-dropdown" id="activity">
+                    <a href="#">
+                        <i class="fa fa-chevron-circle-right"></i>
+                        <span>Activities</span>
+                    </a>
+                    <div class="sidebar-submenu" id="activityMenu">
+                        <ul>
+                            @foreach (var m in Model.OrderBy(x => x.SortId))
+                            {
+                                if (m.Category == "Activities")
+                                {
+                                    <li>
+                                        <a href="@Url.Action(m.Action, m.Controller)">@m.Menu</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </li>
+                <li class="sidebar-dropdown" id="report">
+                    <a href="#">
+                        <i class="fa fa-chart-line"></i>
+                        <span>Reports</span>
+                    </a>
+                    <div class="sidebar-submenu" id="reportMenu">
+                        <ul>
+                            @foreach (var m in Model.OrderBy(x => x.SortId))
+                            {
+                                if (m.Category == "Reports")
+                                {
+                                    <li>
+                                        <a href="@Url.Action(m.Action, m.Controller)">@m.Menu</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </li>
+                <li class="sidebar-dropdown" id="setting">
+                    <a href="#">
+                        <i class="fa fa-cogs"></i>
+                        <span>Settings</span>
+                    </a>
+                    <div class="sidebar-submenu" id="settingMenu">
+                        <ul>
+                            @foreach (var m in Model.OrderBy(x => x.SortId))
+                            {
+                                if (m.Category == "Settings")
+                                {
+                                    <li>
+                                        <a href="@Url.Action(m.Action, m.Controller)">@m.Menu</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </li>
+                <li class="header-menu">
+                    <span>Extra</span>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-book"></i>
+                        <span>Documentation</span>
+                        @*<span class="badge badge-pill badge-primary">Beta</span>*@
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fa fa-calendar"></i>
+                        <span>Calendar</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </form>
+</div>
+
+<script>
+    var results = $("#Results");
+
+    var onComplete = function () {
+        results.html("");
+    };
+
+    var onSuccess = function (context) {
+        alert(context);
+    };
+
+    var onFailed = function (context) {
+        alert("Failed");
+    };
+</script>

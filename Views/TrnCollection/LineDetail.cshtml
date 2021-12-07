@@ -1,0 +1,205 @@
+﻿@model TrnCollectionLine
+
+<form id="frmLineDetail" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="LineId" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+
+            <div class="form-group row">
+                <label asp-for="BranchId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Branch</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineBranchId" style="width: 50%"
+                                    datatextfield="Branch"
+                                    datavaluefield="Id"
+                                    value="@Model.BranchId"
+                                    min-length="2"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineBranches", "TrnCollection")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="AccountId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Account</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineAccountId" style="width: 100%"
+                                    datatextfield="Account"
+                                    datavaluefield="Id"
+                                    value="@Model.AccountId"
+                                    min-length="2"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineAccounts", "TrnCollection")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="ArticleId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Article</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineArticleId" style="width: 100%"
+                                    datatextfield="Article"
+                                    datavaluefield="Id"
+                                    value="@Model.ArticleId"
+                                    min-length="2"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineArticles", "TrnCollection")" data="FilterLineArticles" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Siid" class="col-md-4" style="padding-top: 5px; font-weight: bold;">SI No.</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineSIId" style="width: 50%"
+                                    datatextfield="Sinumber"
+                                    datavaluefield="Id"
+                                    value="@Model.Siid"
+                                    min-length="2"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineSINos", "TrnCollection")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Particulars" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <kendo-textarea name="LineParticulars" placeholder="Particulars" value="@Model.Particulars" rows="2" style="width: 100%">
+                    </kendo-textarea>
+                </div>
+            </div>
+
+
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Amount</label>
+                <div class="col-md-8">
+                    <input class="form-control" name="LineAmount" placeholder="Amount" data-inputmask="'alias': 'currency'" value="@Model.Amount" onchange="AmountChange()" style="width: 50%; text-align: end" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="PayTypeId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Pay Type</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LinePayTypeId" style="width: 50%"
+                                    datatextfield="PayType"
+                                    datavaluefield="Id"
+                                    value="@Model.PayTypeId"
+                                    min-length="1"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LinePayTypes", "TrnCollection")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="CheckNumber" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Check Number</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="LineCheckNumber" placeholder="Check Number" value="@Model.CheckNumber" rows="2" style="width: 50%">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="CheckDate" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Check Date</label>
+                <div class="col-md-8">
+                    <kendo-datepicker for="CheckDate" name="LineCheckDate" depth="CalendarView.Year" value="@Model.CheckDate" style="width: 50%; text-align:end" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="CheckBank" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Check Bank</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="LineCheckBank" placeholder="Check Bank" value="@Model.CheckBank" rows="2" style="width: 50%">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="DepositoryBankId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Depository Bank</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineDepositoryBankId" style="width: 50%"
+                                    datatextfield="Article"
+                                    datavaluefield="Id"
+                                    value="@Model.DepositoryBankId"
+                                    min-length="1"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineBanks", "TrnCollection")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Clear</label>
+                <div class="col-md-8">
+                    <input asp-for="IsClear" name="LineIsClear" type="checkbox" checked="@Model.IsClear" value="@Model.IsClear" onchange="IsClearChanged()" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    $("#frmLineDetail").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+</script>

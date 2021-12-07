@@ -1,0 +1,28 @@
+﻿@model object
+
+@(
+Html.Kendo().ComboBoxFor(m => m)
+    .Placeholder("ExpenseAccount")
+    .DataTextField("Account")
+    .DataValueField("Id")
+    .HtmlAttributes(new { style = "width:100%;" })
+    .Filter(FilterType.Contains)
+    .AutoBind(true)
+    .MinLength(1)
+    .Template("<span style='width: 300px;'>#: data.Account#</span><span style='width: 100px;'>#: data.AccountCode#</span>")
+    .DataSource(source =>
+    {
+        source.Read(read =>
+        {
+            read.Action("LineAccounts", "TrnStockOut");
+        })
+        .ServerFiltering(false);
+    })
+)
+
+<script>
+    var widthVal = "510";
+
+    $("#ExpenseAccountId_listbox").css("width", widthVal);
+    $("#ExpenseAccountId_listbox").parents("div").css("width", widthVal);
+</script>

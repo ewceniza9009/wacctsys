@@ -1,0 +1,94 @@
+﻿@model MstCompany
+
+<form id="frmCompany" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-3" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-9">
+                    <kendo-textbox name="Id" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color:lightgray;" >
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Company" class="col-md-3" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-9">
+                    <kendo-textbox name="Company" placeholder="Company" value="@Model.Company" style="width: 300px">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Address" class="col-md-3" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-9">
+                    <kendo-textbox name="Address" placeholder="Address" value="@Model.Address" style="width: 350px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="ContactNumber" class="col-md-3" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-9">
+                    <kendo-textbox name="ContactNumber" placeholder="Contact No" value="@Model.ContactNumber">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="TaxNumber" class="col-md-3" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-9">
+                    <kendo-textbox name="TaxNumber" placeholder="TIN" value="@Model.TaxNumber">
+                    </kendo-textbox>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="frmCompanySF">
+    @(Html.Kendo().Grid<webfmis.Models.MstBranch>()
+    .Name("companySF")
+    .Columns(columns => {
+        columns.Command(command => command.Custom("- Delete").Click("CmdDeleteBranch")).Width(100);
+        columns.Bound(x => x.Id).Filterable(false).Width(100).HtmlAttributes(new { @style = "pointer-events:none;" });
+        columns.Bound(x => x.BranchCode).Width(120);
+        columns.Bound(x => x.Branch).Width(200);
+        columns.Bound(x => x.Address).Width(400); ;
+        columns.Bound(x => x.ContactNumber).Width(170);
+        columns.Bound(x => x.IsDeleted).Hidden();
+    })
+    .Editable(editable => editable.Mode(GridEditMode.InCell))
+    .ToolBar(x => //x.Create()
+    {
+        x.Custom().Text("+ Add Branch").HtmlAttributes(new { onclick = "CmdAddBranch(); return false;" });
+    })
+    .Navigatable()
+    .Pageable()
+    //.Scrollable()
+    //.HtmlAttributes(new { style = "height:400px;" })
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .ServerOperation(false)
+        .PageSize(5)
+        .Read(read => read.Action("BranchList", "MstCompany", new { CompanyId = ViewData["CompanyId"] }))
+    ))
+</form>
+
+<script>
+    $("#frmCompany").keydown(function (e)
+    {
+        if (isFormDirty(e))
+        {
+            $isDirty = true;
+        }
+    });
+
+    $("#frmCompanySF").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+</script>

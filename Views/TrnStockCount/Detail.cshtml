@@ -1,0 +1,263 @@
+﻿@model TrnStockCount
+
+<style>
+    #Quantity {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+
+    #Cost {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+
+    #Amount {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+</style>
+
+<form id="frmDetail" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Id" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row" hidden="hidden">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="BranchId" placeholder="Branch Id" value="@Model.BranchId" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Branch</label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Branch" placeholder="Branch" readonly="true" value="@Model.BranchName" style="width: 200px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Sc Number</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="Scnumber" placeholder="PO Number" value="@Model.Scnumber" style="width: 50%; background-color: lightgray;" readonly="true">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Sc Date</label>
+                <div class="col-md-8">
+                    <kendo-datepicker name="Scdate" placeholder="PO Date" value="@Model.Scdate" style="width: 200px; text-align:end;" on-change="DateChange" />
+                </div>
+            </div>
+
+
+            <div class="form-group row">
+                <label asp-for="Particulars" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <kendo-textarea name="Particulars" placeholder="Particulars" value="@Model.Particulars" rows="2" style="width: 100%">
+                    </kendo-textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Prepared By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="PreparedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.PreparedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnStockTransfer")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Checked By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="CheckedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.CheckedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnStockTransfer")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Approved By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="ApprovedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.ApprovedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnStockTransfer")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Locked</label>
+                <div class="col-md-8">
+                    <input asp-for="IsLocked" name="IsLocked" type="checkbox" checked="@Model.IsLocked" value="@Model.IsLocked" onchange="IsLockedChanged()" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="frmDetailSF">
+    @(Html.Kendo().Grid<webfmis.Models.TrnStockCountItem>()
+        .Name("detailSF")
+        .Columns(columns =>
+        {
+            columns.Command(command => command.Custom("- Delete").Click("CmdDeleteSCLine"))
+                .Width(100);
+            columns.Bound(x => x.Id)
+                .Filterable(false)
+                .Hidden();
+            columns.Bound(x => x.ItemId)
+                .Title("Item")
+                .Filterable(false)
+                .Width(300)
+                .EditorTemplateName("ForeignKeyForSCItem")
+                .ClientTemplate("#= ItemIdTemplate(ItemId) #")
+                .HtmlAttributes(new { onchange = "ItemChange()" });
+            columns.Bound(x => x.Particulars)
+                .Title("Particulars")
+                .Filterable(false)
+                .Width(200);
+            columns.Bound(x => x.Quantity)
+                .Title("Quantity")
+                .Filterable(false)
+                .Width(150)
+                .HtmlAttributes(new { @style = "text-align: end", onchange = "QuantityChange()" }); 
+            columns.Bound(x => x.UnitName)
+                .Title("Unit")
+                .Filterable(false)
+                .Width(200)
+                .HtmlAttributes(new { @style = "text-align: end; pointer-events:none;" });
+            columns.Bound(x => x.IsDeleted).Hidden();
+        })
+        .Editable(editable => editable.Mode(GridEditMode.InCell))
+        .ToolBar(x =>
+        {
+            x.Custom().Text("+ Add Count Line").HtmlAttributes(new { onclick = "AddSCLine(); return false;" });
+        })
+        .Navigatable()
+        .Selectable(x => x.Mode(GridSelectionMode.Single))
+        .Pageable()
+        .Scrollable(x=> x.Height("auto"))
+        .DataSource(dataSource => dataSource
+            .Ajax()
+            .Model(model =>
+            {
+                model.Id(p => p.Id);
+                model.Field(p => p.ItemId);
+                model.Field(p => p.Particulars);
+                model.Field(p => p.Quantity);
+                model.Field(p => p.IsDeleted);
+            })
+            .ServerOperation(false)
+            .PageSize(5)
+            .Read(read => read.Action("TrnStockCountLineList", "TrnStockCount", new { SCId = ViewData["SCId"] }))
+    ))
+</form>
+
+<script>
+    var widthVal = "510";
+
+    $("#SupplierId_listbox").css("width", widthVal);
+    $("#SupplierId_listbox").parents("div").css("width", widthVal);
+
+    function ItemIdTemplate(itemId)
+    {
+        var result = "NA";
+
+        for (let ctr = 0; ctr < itemView.length; ctr++) {
+            if (itemView[ctr].Id === itemId) {
+
+                result = itemView[ctr].Article;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    $("#frmDetail").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+
+    $("#frmDetailSF").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+
+    //$("#RequestedById_listbox").click(function (e) {
+    //    $isDirty = true;
+    //});
+
+    //$("#TermId_listbox").click(function (e) {
+    //    $isDirty = true;
+    //});
+
+    //$("#RequestedById_listbox").click(function (e) {
+    //    $isDirty = true;
+    //});
+
+    //$("#PreparedById_listbox").click(function (e) {
+    //    $isDirty = true;
+    //});
+
+    //$("#CheckedById_listbox").click(function (e) {
+    //    $isDirty = true;
+    //});
+
+    //$("#ApprovedById_listbox").click(function (e) {
+    //    $isDirty = true;
+    //});
+</script>

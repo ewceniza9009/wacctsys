@@ -1,0 +1,109 @@
+﻿@model TrnCollection
+
+<form id="frmDownloadReceivables" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-md-2" style="padding-top: 5px; font-weight: bold;">Customer</label>
+                <div class="col-sm-10">
+                    <kendo-textbox name="CustomerName" placeholder="Customer" readonly="true" value="@Model.CustomerName" style="width: 100%; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="frmDownloadSILine">
+    @(Html.Kendo().Grid<webfmis.DTO.TmpSalesInvoiceStatus>()
+            .Name("detailSF1")
+            .Columns(columns =>
+            {
+                columns.Bound(x => x.SIDate)
+                    .Title("Date.")
+                    .Filterable(false)
+                    .Format("{0:MM/dd/yyyy}")
+                    .Width(100);
+                columns.Bound(x => x.SINumber)
+                    .Title("SI No.")
+                    .Filterable(false)
+                    .Width(150);
+                columns.Bound(x => x.Particulars)
+                    .Title("Particulars")
+                    .Filterable(false)
+                    .Width(300);
+                columns.Bound(x => x.SIAmount)
+                    .Title("SI Amt")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end"});
+                columns.Bound(x => x.PaidAmount)
+                    .Title("Payments")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end"});
+                columns.Bound(x => x.AdjusmentAmount)
+                    .Title("Adj Amt")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end" });
+                columns.Bound(x => x.BalanceAmount)
+                    .Title("Bal Amt")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end" });
+                columns.Bound(x => x.Pick).Title("P")
+                    .ClientTemplate("<input type='checkbox' #= Pick ? checked='checked' : '' # />")
+                    .Filterable(false)
+                    .Width(50)
+                    .HtmlAttributes(new { @onchange = "PickItem()"});
+                columns.Bound(x => x.Amount)
+                    .Title("Amount")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end;" });
+                columns.Bound(x => x.SIId).Hidden();
+                columns.Bound(x => x.BranchId).Hidden();
+            })
+            .Selectable(x => x.Mode(GridSelectionMode.Single))
+            .Pageable()
+            .Editable(editable => editable.Mode(GridEditMode.InCell))
+            .Scrollable()
+            .Height(400)
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .Model(model =>
+                {
+                    model.Id(p => p.SIId);
+                    model.Field(p => p.SIDate).Editable(false);
+                    model.Field(p => p.SINumber).Editable(false);
+                    model.Field(p => p.Particulars).Editable(false);
+                    model.Field(p => p.SIAmount).Editable(false);
+                    model.Field(p => p.PaidAmount).Editable(false);
+                    model.Field(p => p.AdjusmentAmount).Editable(false);
+                    model.Field(p => p.BalanceAmount).Editable(false);
+                    model.Field(p => p.Pick);
+                    model.Field(p => p.Amount);
+                    model.Field(p => p.BranchId);
+                })
+                .ServerOperation(true)
+                .PageSize(5)
+                .Read(read => read.Action("SIStatusLines", "TrnCollection"))
+        ))
+</form>
+
+<script>
+    $(document).ready(function ()
+    {
+        var grid = $("#detailSF1").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            filter: [
+                { field: "CustomerId", operator: "eq", value: $("#CustomerId").val() },
+                { field: "BranchId", operator: "eq", value: $("#BranchId").val() }
+            ]
+        })
+    })
+</script>

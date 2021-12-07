@@ -1,0 +1,328 @@
+﻿@model TrnReceivingReceipt
+
+<style>
+    #Quantity {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+
+    #Cost {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+
+    #Amount {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+</style>
+
+<form id="frmDetail" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Id" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row" hidden="hidden">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="BranchId" placeholder="Branch Id" value="@Model.BranchId" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Branch</label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Branch" placeholder="Branch" readonly="true" value="@Model.BranchName" style="width: 50%; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">RR Number</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="Rrnumber" placeholder="RR Number" value="@Model.Rrnumber" style="width: 50%; background-color: lightgray;" readonly="true">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">RR Date</label>
+                <div class="col-md-8">
+                    <kendo-datepicker name="Rrdate" placeholder="RR Date" value="@Model.Rrdate" style="width: 50%; text-align: end;" on-change="DateChange" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Doc Ref</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="DocumentReference" placeholder="Doc Ref" value="@Model.DocumentReference" style="width: 50%">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Supplier</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="SupplierId" style="width: 85%"
+                                    datatextfield="Article"
+                                    datavaluefield="Id"
+                                    value="@Model.SupplierId"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    template="<span style='width: 300px;'>#: data.Article#</span><span>#: data.TermName#</span>"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Suppliers", "TrnReceivingReceipt")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                    <input type="button" name="CmdPO" value="PO" class="btn btn-light" onclick="ShowDownloadPO()"/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Term</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="TermId" style="width:50%"
+                                    datatextfield="Term"
+                                    datavaluefield="Id"
+                                    value="@Model.TermId"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Terms", "TrnPurchaseOrder")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Remarks" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <kendo-textarea name="Remarks" placeholder="Particulars" value="@Model.Remarks" rows="2" style="width: 100%">
+                    </kendo-textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Manual Number</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="ManualRrnumber" placeholder="Manual RR Number" value="@Model.ManualRrnumber" style="width: 200px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Received By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="ReceivedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.ReceivedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnReceivingReceipt")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Prepared By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="PreparedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.PreparedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnReceivingReceipt")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Checked By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="CheckedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.CheckedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnReceivingReceipt")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Approved By</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="ApprovedById" style="width: 90%"
+                                    datatextfield="FullName"
+                                    datavaluefield="Id"
+                                    value="@Model.ApprovedById"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Users", "TrnReceivingReceipt")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Locked</label>
+                <div class="col-md-8">
+                    <input asp-for="IsLocked" name="IsLocked" type="checkbox" checked="@Model.IsLocked" value="@Model.IsLocked" onchange="IsLockedChanged()" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="frmDetailSF">
+        @(Html.Kendo().Grid<webfmis.Models.TrnReceivingReceiptItem>()
+            .Name("detailSF")
+            .Columns(columns =>
+            {
+                columns.Command(command => command.Custom("Detail").Click("CmdDetailRRLine"))
+                    .Width(100);
+                columns.Command(command => command.Custom("- Delete").Click("CmdDeleteRRLine"))
+                    .Width(120);
+                columns.Bound(x => x.Id)
+                    .Filterable(false)
+                    .Hidden();
+                columns.Bound(x => x.PONumber)
+                    .Title("PO No.")
+                    .Filterable(false)
+                    .Width(150);
+                columns.Bound(x => x.ItemName)
+                    .Title("Item")
+                    .Filterable(false)
+                    .Width(200);
+                columns.Bound(x => x.Particulars)
+                    .Title("Particulars")
+                    .Filterable(false)
+                    .Width(175);
+                columns.Bound(x => x.Quantity)
+                    .Title("Quantity")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end"});
+                columns.Bound(x => x.UnitName)
+                   .Title("Unit")
+                   .Filterable(false)
+                   .Width(100);
+                columns.Bound(x => x.Cost)
+                    .Title("Cost")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end"});
+                columns.Bound(x => x.Amount)
+                    .Title("Amount")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end; pointer-events:none;" })
+                    .ClientFooterTemplate("<div style='text-align: end'>#=kendo.format(\"{0:n2}\", kendo.parseFloat(sum))#</div>");
+                columns.Bound(x => x.BranchName)
+                    .Title("Branch")
+                    .Filterable(false)
+                    .Width(150);
+                columns.Bound(x => x.VatInfo)
+                    .Title("Tax Info")
+                    .Filterable(false)
+                    .Width(300);
+                columns.Bound(x => x.WTaxInfo)
+                    .Title("W Tax Info")
+                    .Filterable(false)
+                    .Width(400);
+                columns.Bound(x => x.UnitConversionInfo)
+                    .Title("Conversion Info")
+                    .Filterable(false)
+                    .Width(300);
+                columns.Bound(x => x.Poid).Hidden();
+                columns.Bound(x => x.ItemId).Hidden();
+                columns.Bound(x => x.UnitId).Hidden();
+                columns.Bound(x => x.Vatid).Hidden();
+                columns.Bound(x => x.Vatpercentage).Hidden();
+                columns.Bound(x => x.Vatamount).Hidden();
+                columns.Bound(x => x.Wtaxid).Hidden();
+                columns.Bound(x => x.Wtaxpercentage).Hidden();
+                columns.Bound(x => x.Wtaxamount).Hidden();
+                columns.Bound(x => x.BaseUnitId).Hidden();
+                columns.Bound(x => x.BaseQuantity).Hidden();
+                columns.Bound(x => x.BaseCost).Hidden();
+                columns.Bound(x => x.IsDeleted).Hidden();
+            })
+            .ToolBar(x =>
+            {
+                x.Custom().Text("+ Add RR Line").HtmlAttributes(new { onclick = "AddRRLine(); return false;" });
+            })
+            .Selectable(x => x.Mode(GridSelectionMode.Single))
+            .Pageable()
+            .Scrollable(x=> x.Height("auto"))
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .Aggregates(x => x.Add(a => a.Amount).Sum())
+                .ServerOperation(false)
+                .PageSize(5)
+                .AutoSync(true)
+                .Read(read => read.Action("TrnReceivingReceiptLineList", "TrnReceivingReceipt", new { RRId = ViewData["RRId"] }))
+        ))
+    </form>
+
+<script>
+    var widthVal = "510";
+
+    $("#SupplierId_listbox").css("width", widthVal);
+    $("#SupplierId_listbox").parents("div").css("width", widthVal);
+
+    $("#frmDetail").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+</script>

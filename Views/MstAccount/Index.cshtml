@@ -1,0 +1,620 @@
+﻿@{
+    ViewData["Title"] = "- Account";
+}
+
+<style>
+    .cmd-buttons {
+        margin-left: 10px;
+        width: 90px;
+    }
+
+    .recordcontent {
+        display: none;
+        padding: 5px;
+    }
+
+    .k-floating-label-container {
+        width: 100%;
+    }
+</style>
+
+<div class="lookupPanel">
+    <div class="input-group">
+        <input type="text" class="form-control" placeholder="Search..." id="search">
+        <button type="button"
+                class="btn bg-transparent"
+                style="margin-left: -40px; z-index: 90;"
+                id="clearSearch">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+</div>
+
+<div class="gridview">
+    <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+        <div class="col-md-6">
+            <h5 style="margin-top: 10px;"><i class="fab fa-amilia"></i> Account</h5>
+        </div>
+
+        <div class="col-md-6">
+            <div class="CmdHome">
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button">
+                    <span class="btn-label">
+                        <i class="fa fa-arrow-left"></i>
+                    </span>Home
+                </button>
+            </div>
+
+            <div class="CmdAdd">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanAdd)
+                {
+                    <button class="btn btn-primary cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-plus-square"></i>
+                        </span>
+                        Add
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @(Html.Kendo().Grid<webfmis.Models.MstAccount>()
+    .Name("mainList")
+    .Columns(columns => {
+
+        if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanEdit)
+        {
+            columns.Command(command => command.Custom("Detail")
+               .Click("CmdDetail"))
+               .Width(100);
+        }
+        else
+        {
+            columns.Command(command => command.Custom("Detail")
+               .Click("CmdDetail"))
+               .HtmlAttributes(new { @class = "k-state-disabled" })
+               .Width(100);
+        }
+
+        columns.Bound(x => x.Id).Filterable(false).Width(100).Hidden();
+        columns.Bound(x => x.AccountCode).Filterable(x => x.Cell(y => y.Operator("Contains"))).Width(100);
+        columns.Bound(x => x.Account).Filterable(x => x.Cell(y => y.Operator("Contains"))).Width(500);
+        columns.Bound(x => x.AccountTypeName).Width(200);
+        columns.Bound(x => x.IsLocked)
+            .Title("L")
+            .ClientTemplate("<input type='checkbox' disabled #= IsLocked ? checked='checked' : '' # />")
+            //.Filterable(filterable =>
+            //    filterable
+            //        .Multi(true)
+            //        .Search(true)
+            //        .UI("IsLockedFilterData"))
+            .Filterable(false)
+            .Width(50);
+    })
+    .Selectable(x => x.Mode(GridSelectionMode.Single))
+    .Pageable()
+    .Sortable()
+    .Scrollable()
+    .Filterable()
+    .HtmlAttributes(new { style = "height:700px;" })
+    .Filterable(x => x.Mode(GridFilterMode.Row))
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .PageSize(20)
+        .ServerOperation(true)
+        .Read(read => read.Action("AccountList", "MstAccount"))
+    ))
+</div>
+
+<div class="recordcontent">
+    <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+        <div class="col-md-6">
+            <h5 style="margin-top: 10px;"><i class="fab fa-amilia"></i> Account Detail</h5>
+        </div>
+
+        <div class="col-md-6">
+            <div class="CmdBack">
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button">
+                    <span class="btn-label">
+                        <i class="fa fa-arrow-left"></i>
+                    </span>
+                    Back
+                </button>
+            </div>
+
+            <div class="CmdSave">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanLock)
+                {
+                    <button class="btn btn-primary cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-lock"></i>
+                        </span>
+                        Save
+                    </button>
+                }
+            </div>
+
+            <div class="CmdDelete">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanDelete)
+                {
+                    <button class="btn btn-danger cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 100px">
+                        <span class="btn-label">
+                            <i class="fa fa-trash"></i>
+                        </span>
+                        Delete
+                    </button>
+                }
+            </div>
+
+            <div class="CmdPreview">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanPrint)
+                {
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-print"></i>
+                        </span>
+                        Print
+                    </button>
+                }
+            </div>
+
+            @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanEdit)
+            {
+                <div class="CmdNext">
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 50px">
+                        <span class="btn-label">
+                            <i class="fa fa-arrow-right"></i>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="CmdPrev">
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 50px">
+                        <span class="btn-label">
+                            <i class="fa fa-arrow-left"></i>
+                        </span>
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="recordcontentform" />
+</div>
+
+<script>
+    @*function IsLockedFilterData(element) {
+        element.kendoDropDownList({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("IsLockedFilterData", "MstAccount")"
+                }
+            }
+        });
+    }*@
+</script>
+
+<script>
+    $header = $(".gridview");
+    $content = $(".recordcontent");
+    $transitionTime = 200;
+
+    $isDirty = false;
+
+    $isSearchFocused = false;
+
+    $Entity = new Object();
+
+    $UserRights = JSON.parse('@Html.Raw(Json.Serialize(ViewData["UserRights"]))');
+
+    $(".CmdHome").click(function () {
+        location.href = "@Url.Action("Index","Home")";
+    });
+
+    $(".CmdAdd").click(function () {
+        $header.hide($transitionTime);
+        $content.show($transitionTime);
+
+        $("#recordcontentform").empty();
+        $("#recordcontentform").load("/MstAccount/Add");
+    });
+
+    function CmdDetail(e) {
+        e.preventDefault();
+
+        var grid = $("#mainList").getKendoGrid();
+        var item = grid.dataItem($(e.target).closest("tr"));
+
+        grid.select($(e.target).closest("tr"));
+
+        $Entity = item;
+
+        $header.hide($transitionTime);
+        $content.show($transitionTime);
+
+        loadPartialView(item.Id);
+    }
+
+    $(".CmdBack").click(function () {
+        if ($isDirty)
+        {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+            .then((result) => {
+                if (result.isConfirmed)
+                {
+                    Save();
+
+                    $header.show($transitionTime);
+                    $content.hide($transitionTime);
+                }
+                else
+                {
+                    if (result.dismiss == "cancel")
+                    {
+                        $header.show($transitionTime);
+                        $content.hide($transitionTime);
+
+                        loadPartialView($Entity.Id);
+                    }
+                    else
+                    {
+                        $isDirty = true;
+                    }
+                }
+            })
+
+            e.preventDefault();
+        }
+
+        $content.hide($transitionTime);
+        $header.show($transitionTime);
+    });
+
+    $(".CmdDelete").click(function () {
+        Swal.fire({
+            icon: 'error',
+            text: "Do you want to delete '" + $Entity.Account + "'?",
+            showCancelButton: true,
+            confirmButtonText: "Delete",
+            cancelButtonText: "No"
+        })
+        .then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "@(Url.Action("Delete", "MstAccount"))",
+                    type: "DELETE",
+                    dataType: 'json',
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    data: { "Id": $Entity.Id },
+                    success: function ()
+                    {
+                        var grid = $("#mainList").data("kendoGrid");
+                        grid.dataSource.read();
+
+                        $content.hide($transitionTime);
+                        $header.show($transitionTime);
+
+                        $isDirty = false;
+                    }
+                });
+            }
+            else if (result.isDenied)
+            {
+                //Do nothing...
+            }
+        })
+    });
+
+    $(".CmdSave").click(function ()
+    {
+        Save()
+
+        if($UserRights.CanLock)
+        {
+            Swal.fire({
+                icon: 'success',
+                text: 'Record saved successfully!',
+                showConfirmButton: true,
+            })
+        }
+    });
+
+    function CmdAddAccountArticleType()
+    {
+        var grid = $("#detailSF").getKendoGrid();
+
+        grid.dataSource.insert({ Id: 0, AccountId: $Entity.Id, ArticleTypeId: 1, IsDeleted: false });
+
+        $isDirty = true;
+    }
+
+    function CmdDeleteAccountArticleType(e)
+    {
+        e.preventDefault();
+
+        var grid = $("#detailSF").getKendoGrid();
+        var item = grid.dataItem($(e.target).closest("tr"));
+
+        Swal.fire({
+            icon: 'error',
+            text: "Do you want to delete this record?",
+            showCancelButton: true,
+            confirmButtonText: "Delete"
+        })
+        .then((result) => {
+            if (result.isConfirmed) {
+
+                item.set("IsDeleted", true);
+
+                grid.dataSource.filter({ field: "IsDeleted", operator: "eq", value: false });
+
+                $isDirty = true;
+            }
+        })
+    }
+
+    $("#clearSearch").click(function () {
+        $("#search").val("");
+
+        var grid = $("#mainList").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            filter: { field: "Account", operator: "contains", value: $("#search").val() }
+        })
+    });
+
+    $("#search").on("click", function () {
+        if ($isDirty)
+        {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+            .then((result) => {
+                if (result.isConfirmed)
+                {
+                    Save();
+
+                    $header.show($transitionTime);
+                    $content.hide($transitionTime);
+                }
+                else
+                {
+                    if (result.dismiss == "cancel")
+                    {
+                        $header.show($transitionTime);
+                        $content.hide($transitionTime);
+
+                        loadPartialView($Entity.Id);
+                    }
+                    else {
+                        $isDirty = true;
+                    }
+                }
+            })
+
+            e.preventDefault();
+            return;
+        }
+
+        $header.show($transitionTime);
+        $content.hide($transitionTime);
+    })
+
+    $("#search").change(function () {
+        var grid = $("#mainList").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            filter: { field: "Account", operator: "contains", value: $("#search").val() }
+        })
+        .then(function (e) {
+            if (grid.dataSource.data().length == 1)
+            {
+                $header.hide($transitionTime);
+                $content.show($transitionTime);
+
+                loadPartialView(grid.dataSource.view()[0].Id);
+            }
+        });
+    });
+
+    $(".CmdPrev").click(function () {
+        if ($isDirty)
+        {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+            .then((result) => {
+                if (result.isConfirmed)
+                {
+                    $isDirty = false;
+                    Save();
+                }
+                else
+                {
+                    if (result.dismiss == "cancel")
+                    {
+                        loadPartialView($Entity.Id);
+
+                        turnPage("Prev");
+                    }
+                    else
+                    {
+                        $isDirty = true;
+                    }
+                }
+            })
+
+            e.preventDefault();
+        }
+
+        turnPage("Prev");
+    });
+
+    $(".CmdNext").click(function () {
+        if ($isDirty)
+        {
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+            .then((result) => {
+                if (result.isConfirmed)
+                {
+                    $isDirty = false;
+                    Save();
+                }
+                else
+                {
+                    if (result.dismiss == "cancel")
+                    {
+                        loadPartialView($Entity.Id);
+
+                        turnPage("Next");
+                    }
+                    else
+                    {
+                        $isDirty = true;
+                    }
+                }
+            })
+
+            e.preventDefault();
+        }
+
+        turnPage("Next");
+    });
+
+    function AccountTypeChange()
+    {
+        $isDirty = true;
+    }
+
+    function AccountCashFlowChange() {
+        $isDirty = true;
+    }
+
+    function ArticleTypeChange()
+    {
+        $isDirty = true;
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+        if ($isDirty)
+        {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function Save()
+    {
+        if($UserRights.CanLock)
+        {
+            var result = "";
+            var grid = $("#mainList").data("kendoGrid");
+
+            var frmDetail = $("#frmDetail");
+            var formData = GetFormData(frmDetail);
+
+            var detailSFGrid = $("#detailSF").getKendoGrid();
+            detailSFGrid.dataSource.filter({});
+
+            var detailSFGridData = $("#detailSF").data().kendoGrid.dataSource._data;
+            var detailSFData = detailSFGridData.map(({ Id, AccountId, ArticleTypeId, IsDeleted }) => ({ Id, AccountId, ArticleTypeId, IsDeleted }));
+
+             $.ajax({
+                url: "@(Url.Action("Save", "MstAccount"))",
+                type: "POST",
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { "data": formData, "dataSub": detailSFData },
+                success: function (data)
+                {
+                    grid.dataSource.read();
+
+                    loadPartialView(data.Id);
+
+                    $isDirty = false;
+
+                    result = data.Account;
+                }
+             });
+        }
+        else
+        {
+            Swal.fire({
+                icon: 'info',
+                text: 'Save not successful, User does not have rights!',
+                showConfirmButton: true,
+            })
+        }
+    }
+
+    function loadPartialView(id)
+    {
+        $("#recordcontentform").empty();
+        $("#recordcontentform").load("/MstAccount/AccountDetail?Id=" + id);
+    }
+
+    function turnPage(action)
+    {
+        $.ajax({
+            url: "MstAccount/" + action,
+            type: "GET",
+            dataType: 'json',
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            data: { "Id": $Entity.Id },
+            success: function (data)
+            {
+                if (data != null)
+                {
+                    $Entity = data;
+
+                    loadPartialView(data.Id);
+                }
+            }
+         });
+    }
+</script>
+
+<script src="~/js/Util.js"></script>
+

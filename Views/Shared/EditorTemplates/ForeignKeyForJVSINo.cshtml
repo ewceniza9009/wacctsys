@@ -1,0 +1,28 @@
+﻿@model object
+
+@(
+Html.Kendo().ComboBoxFor(m => m)
+    .Placeholder("SI No")
+    .DataTextField("Sinumber")
+    .DataValueField("Id")
+    .HtmlAttributes(new { style = "width:100%;" })
+    .Filter(FilterType.Contains)
+    .AutoBind(true)
+    .MinLength(3)
+    .Template("<span style='width: 150px;'>#: data.Sinumber#</span><span style='width: 100px;'>#: kendo.format(\"{0:MM/dd/yyyy}\", kendo.parseDate(data.Sidate))#</span></span><span style='width: 100px; text-align: end;'>#:  kendo.format(\"{0:n2}\", kendo.parseFloat(data.BalanceAmount))#</span>")
+    .DataSource(source =>
+    {
+        source.Read(read =>
+        {
+            read.Action("LineSINos", "TrnJournalVoucher");
+        })
+        .ServerFiltering(false);
+    })
+)
+
+<script>
+    var widthVal = "360";
+
+    $("#Arsiid_listbox").css("width", widthVal);
+    $("#Arsiid_listbox").parents("div").css("width", widthVal);
+</script>

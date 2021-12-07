@@ -1,0 +1,78 @@
+﻿@model MstArticle
+
+<form id="frmDownloadShowCost" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-12">
+            <div class="form-group row">
+                <div class="col-sm-9">
+                    <kendo-textbox name="ArticleName" placeholder="Article" readonly="true" value="@Model.Article" style="width: 100%; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-control" name="Amount" data-inputmask="'alias': 'currency'" value="@Model.Cost" style="width: 100%; text-align: end" readonly/>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="frmShowCostLine">
+    @(Html.Kendo().Grid<webfmis.DTO.Costing>()
+            .Name("detailSF2")
+            .Columns(columns =>
+            {
+                columns.Bound(x => x.ComponentCode)
+                    .Title("Code")
+                    .Filterable(false)
+                    .Width(100);
+                columns.Bound(x => x.ComponentName)
+                    .Title("Component")
+                    .Filterable(false)
+                    .Width(300);
+                columns.Bound(x => x.Quantity)
+                    .Title("Quantity")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end" });
+                columns.Bound(x => x.UnitName)
+                    .Title("Unit")
+                    .Filterable(false)
+                    .Width(100);
+                columns.Bound(x => x.Cost)
+                    .Title("Cost")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end"});
+                columns.Bound(x => x.Amount)
+                    .Title("Amount")
+                    .Filterable(false)
+                    .Width(125)
+                    .HtmlAttributes(new { @style = "text-align: end" });
+                columns.Bound(x => x.ArticleId).Hidden();
+                columns.Bound(x => x.ComponentArticleId).Hidden();
+            })
+            .Selectable(x => x.Mode(GridSelectionMode.Single))
+            .Pageable()
+            .Editable(editable => editable.Mode(GridEditMode.InCell))
+            .Scrollable()
+            .Height(400)
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .Model(model =>
+                {
+                    model.Id(p => p.ArticleId);
+                    model.Field(p => p.ArticleName).Editable(false);
+                    model.Field(p => p.ComponentArticleId).Editable(false);
+                    model.Field(p => p.ComponentCode).Editable(false);
+                    model.Field(p => p.ComponentName).Editable(false);
+                    model.Field(p => p.Particulars).Editable(false);
+                    model.Field(p => p.Quantity).Editable(false);
+                    model.Field(p => p.UnitName).Editable(false);
+                    model.Field(p => p.Cost).Editable(false);
+                    model.Field(p => p.Amount).Editable(false);
+                })
+                .ServerOperation(true)
+                .PageSize(10)
+                .Read(read => read.Action("ShowItemComponents", "TrnStockIn", new { ItemId = ViewData["ItemId"] }))
+        ))
+</form>

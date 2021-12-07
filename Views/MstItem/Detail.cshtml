@@ -1,0 +1,546 @@
+﻿@model MstArticle
+
+<style>
+    #Multiplier {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+
+    #Quantity {
+        padding: 5px .5rem;
+        text-overflow: clip;
+        text-align-last: right;
+    }
+</style>
+
+<form id="frmDetail" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Id" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Item Code</label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="ArticleCode" placeholder="Article Code" readonly="true" value="@Model.ArticleCode" style="width: 200px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Manual Code</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="ManualArticleCode" placeholder="Manual Article Code" value="@Model.ManualArticleCode" style="width: 200px">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Item</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="Article" placeholder="Article" value="@Model.Article" style="width: 80%">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Item Group</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="ArticleGroupId" style="width: 80%"
+                                    datatextfield="ArticleGroup"
+                                    datavaluefield="Id"
+                                    value="@Model.ArticleGroupId"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="20">
+                            <transport>
+                                <read url="@Url.Action("ArticleGroups", "MstItem")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Category" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    @(Html.Kendo().AutoComplete()
+                        .Name("Category")
+                        .Filter("contains")
+                        .DataTextField("CategoryName")
+                        .Placeholder("Category")
+                        .Value(Model.Category)
+                        .MinLength(1)
+                        .HtmlAttributes( new { @style = "Width: 50%" })
+                        .DataSource(source => {
+                            source
+                                .Read(read =>
+                                {
+                                    read.Action("Categories", "MstItem")
+                                    .Data("CategoryFilter");
+                                })
+                                .ServerFiltering(true);
+                        })
+                    )
+
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Unit</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="UnitId" style="width:50%"
+                                    datatextfield="Unit"
+                                    datavaluefield="Id"
+                                    value="@Model.UnitId"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Units", "MstItem")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Price" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    @*<input class="form-control" id="Price" name="Price" value="@Model.Price"
+                        data-inputmask="'alias': 'currency',
+                            'prefix': '₱ ',
+                            'groupSeparator': ',',
+                            'autoGroup':      true,
+                            'digits':         2,
+                            'digitsOptional': false,
+                            'placeholder':    '0.00' " style="width: 50%; text-align: end"
+                        onkeyup="PriceKeyUp(document.getElementById('Price'))"/>*@
+                    <input class="form-control" name="Price" value="@Model.Price" data-inputmask="'alias': 'currency', 'digits': 2" style="width: 50%; text-align: end" onkeyup="PriceKeyUp(document.getElementById('Price'))" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Particulars" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <kendo-textarea name="Particulars" placeholder="Particulars" value="@Model.Particulars" rows="2" style="width: 100%">
+                    </kendo-textarea>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Inventory</label>
+                <div class="col-md-8">
+                    <input asp-for="IsInventory" name="IsInventory" type="checkbox" checked="@Model.IsInventory" value="@Model.IsInventory" onchange="IsInventoryChanged()" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Input Tax</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="InputTaxId" style="width: 90%"
+                                    datatextfield="TaxType"
+                                    datavaluefield="Id"
+                                    value="@Model.InputTaxId"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Taxes", "MstItem")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Output Tax</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="OutputTaxId" style="width: 90%"
+                                    datatextfield="TaxType"
+                                    datavaluefield="Id"
+                                    value="@Model.OutputTaxId"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Taxes", "MstItem")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Withholding Tax</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="WtaxTypeId" style="width: 90%"
+                                    datatextfield="TaxType"
+                                    datavaluefield="Id"
+                                    value="@Model.WtaxTypeId"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Taxes", "MstItem")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Cost" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <input class="form-control" name="Cost" data-inputmask="'alias': 'currency'" value="@Model.Cost" style="width: 50%; text-align: end" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Locked</label>
+                <div class="col-md-8">
+                    <input asp-for="IsLocked" name="IsLocked" type="checkbox" checked="@Model.IsLocked" value="@Model.IsLocked" onchange="IsLockedChanged()" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<kendo-tabstrip name="itemTabs">
+    <popup-animation>
+        <open effects="fade:in" />
+    </popup-animation>
+    <items>
+        <tabstrip-item text="Unit Conversion" selected="true">
+            <content>
+                <div class="row">
+                    <form id="frmDetailSF">
+                        @(Html.Kendo().Grid<webfmis.Models.MstArticleUnit>()
+                            .Name("detailSF")
+                            .Columns(columns =>
+                            {
+                                columns.Command(command => command.Custom("- Delete").Click("CmdDeleteUnitConversion"))
+                                    .Width(100);
+                                columns.Bound(x => x.Id)
+                                    .Filterable(false)
+                                    .Hidden();
+                                columns.Bound(x => x.Multiplier)
+                                    .Title("Factor")
+                                    .Filterable(false)
+                                    .Width(200)
+                                    .HtmlAttributes(new { @style = "text-align: end"});
+                                columns.ForeignKey(x => x.UnitId, a => a.Read(b => b.Action("ArticleUnits", "MstItem") ) , "Id", "Unit")
+                                    .Title("Unit")
+                                    .Width(200)
+                                    .HtmlAttributes(new { onchange = "UnitChange()" });
+                                columns.Bound(x => x.EqualSign)
+                                    .Title("Equal")
+                                    .Width(30)
+                                    .HtmlAttributes(new { @style = "text-align: center; pointer-events:none;" });
+                                columns.Bound(x => x.BaseUnitName)
+                                    .Title("Base Unit")
+                                    .Width(200)
+                                    .HtmlAttributes(new { @style = "pointer-events:none;" });
+                                columns.Bound(x => x.IsDeleted).Hidden();
+                            })
+                            .Editable(editable => editable.Mode(GridEditMode.InCell))
+                            .ToolBar(x =>
+                            {
+                                x.Custom().Text("+ Add Unit Conversion").HtmlAttributes(new { onclick = "AddUnitConversion(); return false;" });
+                            })
+                            .Navigatable()
+                            .Pageable()
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .Model(model =>
+                                {
+                                    model.Field(p => p.EqualSign).Editable(false);
+                                    model.Field(p => p.BaseUnitName).Editable(false);
+                                })
+                                .ServerOperation(false)
+                                .PageSize(5)
+                                .Read(read => read.Action("ArticleUnitList", "MstItem", new { ArticleId = ViewData["ArticleId"] }))
+                            ))
+                    </form>
+                </div>
+            </content>
+        </tabstrip-item>
+
+        <tabstrip-item text="Component">
+            <content>
+                <div class="row">
+                    <form id="frmDetailSF1">
+                        @(Html.Kendo().Grid<webfmis.Models.MstArticleComponent>()
+                            .Name("detailSF1")
+                            .Columns(columns =>
+                            {
+                                columns.Command(command => command.Custom("- Delete").Click("CmdDeleteComponent")).Width(100);
+                                columns.Bound(x => x.Id).Filterable(false).Hidden();
+                                columns.Bound(x => x.ComponentManualCode)
+                                    .Width(200)
+                                    .Title("ManualCode");
+                                columns.ForeignKey(x => x.ComponentArticleId, a => a.Read(b => b.Action("Articles", "MstItem")), "Id", "Article")
+                                    .Width(350)
+                                    .Title("Component")
+                                    .HtmlAttributes(new { onchange = "ComponentArticleChange()" });
+                                columns.Bound(x => x.Quantity)
+                                    .Title("Quantity")
+                                    .Filterable(false)
+                                    .Width(150)
+                                    .HtmlAttributes(new { @style = "text-align: end", onchange = "QuantityChange()"});
+                                columns.Bound(x => x.ComponentUnit)
+                                    .Width(150)
+                                    .Title("Unit");
+                                columns.Bound(x => x.Cost)
+                                    .Width(150)
+                                    .Title("Cost")
+                                    .HtmlAttributes(new { @style = "text-align: end" }); ;
+                                columns.Bound(x => x.Amount)
+                                    .Width(150)
+                                    .Title("Amount")
+                                    .HtmlAttributes(new { @style = "text-align: end" });
+                                columns.Bound(x => x.Particulars)
+                                    .Width(200)
+                                    .Title("Particulars")
+                                    .Width(350);
+                                columns.Bound(x => x.IsDeleted).Hidden();
+                            })
+                            .Editable(editable => editable.Mode(GridEditMode.InCell))
+                            .ToolBar(x =>
+                            {
+                                x.Custom().Text("+ Add Component").HtmlAttributes(new { onclick = "AddComponent(); return false;" });
+                            })
+                            .Navigatable()
+                            .Selectable(x => x.Mode(GridSelectionMode.Single))
+                            .Pageable()
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .Model(model =>
+                                {
+                                    model.Field(p => p.ComponentManualCode).Editable(false);
+                                    model.Field(p => p.ComponentUnit).Editable(false);
+                                    model.Field(p => p.Cost).Editable(false);
+                                    model.Field(p => p.Amount).Editable(false);
+                                })
+                                .ServerOperation(false)
+                                .PageSize(5)
+                                .Read(read => read.Action("ArticleComponentList", "MstItem", new { ArticleId = ViewData["ArticleId"] }))
+                            ))
+                    </form>
+                </div>
+            </content>
+        </tabstrip-item>
+
+        <tabstrip-item text="GL Account">
+            <content>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="frmDetail1" asp-antiforgery="false" method="post">
+                            <div class="form-group row">
+                                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Account</label>
+                                <div class="col-md-8">
+                                    <kendo-combobox name="AccountId" style="width: 100%"
+                                                    datatextfield="Account"
+                                                    datavaluefield="Id"
+                                                    value="@Model.AccountId"
+                                                    min-length="3"
+                                                    height="520"
+                                                    filter="FilterType.Contains"
+                                                    on-change="EntityComboxChange">
+                                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                            <transport>
+                                                <read url="@Url.Action("Accounts", "MstItem")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-combobox>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Sales Account</label>
+                                <div class="col-md-8">
+                                    <kendo-combobox name="SalesAccountId" style="width: 100%"
+                                                    datatextfield="Account"
+                                                    datavaluefield="Id"
+                                                    value="@Model.SalesAccountId"
+                                                    min-length="3"
+                                                    height="520"
+                                                    filter="FilterType.Contains"
+                                                    on-change="EntityComboxChange">
+                                        <datasource type="DataSourceTagHelperType.Ajax" page-size="1000">
+                                            <transport>
+                                                <read url="@Url.Action("Accounts", "MstItem")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-combobox>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Cost Account</label>
+                                <div class="col-md-8">
+                                    <kendo-combobox name="CostAccountId" style="width: 100%"
+                                                    datatextfield="Account"
+                                                    datavaluefield="Id"
+                                                    value="@Model.CostAccountId"
+                                                    min-length="3"
+                                                    height="520"
+                                                    filter="FilterType.Contains"
+                                                    on-change="EntityComboxChange">
+                                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                            <transport>
+                                                <read url="@Url.Action("Accounts", "MstItem")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-combobox>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Asset Account</label>
+                                <div class="col-md-8">
+                                    <kendo-combobox name="AssetAccountId" style="width: 100%"
+                                                    datatextfield="Account"
+                                                    datavaluefield="Id"
+                                                    value="@Model.AssetAccountId"
+                                                    min-length="3"
+                                                    height="520"
+                                                    filter="FilterType.Contains"
+                                                    on-change="EntityComboxChange">
+                                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                            <transport>
+                                                <read url="@Url.Action("Accounts", "MstItem")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-combobox>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Expense Account</label>
+                                <div class="col-md-8">
+                                    <kendo-combobox name="ExpenseAccountId" style="width: 100%"
+                                                    datatextfield="Account"
+                                                    datavaluefield="Id"
+                                                    value="@Model.ExpenseAccountId"
+                                                    min-length="3"
+                                                    height="520"
+                                                    filter="FilterType.Contains"
+                                                    on-change="EntityComboxChange">
+                                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                            <transport>
+                                                <read url="@Url.Action("Accounts", "MstItem")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-combobox>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </content>
+        </tabstrip-item>
+
+        <tabstrip-item text="Fixed Asset">
+            <content>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="frmDetail2">
+                            <div class="form-group row">
+                                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Date Acquired</label>
+                                <div class="col-md-8">
+                                    <kendo-datepicker for="DateAcquired" name="DateAcquired" depth="CalendarView.Year" value="@Model.DateAcquired" style="width: 50%; text-align:end" />
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Useful Life</label>
+                                <div class="col-md-8">
+                                    <input class="form-control" name="UsefulLife" data-inputmask="'alias': 'currency'" value="@Model.UsefulLife" style="width: 50%; text-align: end" />
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Salvage Value</label>
+                                <div class="col-md-8">
+                                    <input class="form-control" name="SalvageValue" data-inputmask="'alias': 'currency'" value="@Model.SalvageValue" style="width: 50%; text-align: end" />
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <span class="rainy">&nbsp;</span>
+            </content>
+        </tabstrip-item>
+
+        <tabstrip-item text="Image">
+            <content>
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="frmDetail3">
+                            <div class="form-group row">
+                               @*<label class="col-md-1" style="padding-top: 5px; font-weight: bold;">Image</label>*@
+                                <div class="col-md-12">
+                                    <div class="input-group mb-3">
+                                        <input type="file" id="ArticleImageFile" accept="image/x-png,image/gif,image/jpeg" onchange="ArticleImageFileChange(); return false;" style="display: none" />
+                                        <input type="text" name="OldArticleImage" class="form-control" value="@Model.OldArticleImage" placeholder="Choose file..." style="width: 100px; background-color: lightgray;" hidden>
+                                        <input type="text" name="ArticleImage" class="form-control" value="@Model.ArticleImage" placeholder="Choose file..." style="width: 100px; background-color: lightgray; pointer-events:none;" readonly>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-secondary" onclick="document.querySelector('#ArticleImageFile').click(); return false;">Browse</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p style="text-align:center;">
+                                @*<img src="~/itemImages/no-image.png" class="img-fluid" alt="Image">*@
+                                <img id="ArticleImagePath" src="@Model.ArticleImagePath" class="img-fluid" alt="Image" style="border-radius: 10px">
+                            </p>
+                        </form>
+                    </div>
+                </div>
+                <span class="rainy">&nbsp;</span>
+            </content>
+        </tabstrip-item>
+    </items>
+</kendo-tabstrip>
+
+
+<script>
+    $("#frmDetail").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+
+    $("#frmDetailSF").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+
+    $("#frmDetailSF1").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+</script>

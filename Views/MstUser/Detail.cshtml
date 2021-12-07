@@ -1,0 +1,153 @@
+﻿@model MstUser
+
+<form id="frmDetail" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Id" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Username</label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="Username" placeholder="Username" value="@Model.UserName">
+                    </kendo-textbox>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Full Name</label>
+                <div class="col-md-8">
+                    <kendo-textbox name="FullName" placeholder="Fullname" value="@Model.FullName" style="width: 75%">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Password</label>
+                <div class="col-md-8">
+                    <input class="form-control" type="password" name="Password" placeholder="Fullname" value="@Model.Password" style="width: 75%" />
+                </div>
+            </div>            
+        </div>
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Email</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="AspUserId" style="width: 85%"
+                                    datatextfield="Email"
+                                    datavaluefield="Id"
+                                    value="@Model.ASPUserId"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                            <transport>
+                                <read url="@Url.Action("Emails", "MstUser")" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Locked</label>
+                <div class="col-md-8">
+                    <input asp-for="IsLocked" name="IsLocked" type="checkbox" checked="@Model.IsLocked" value="@Model.IsLocked" onchange="IsLockedChanged()" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="frmDetailSF">
+@(Html.Kendo().Grid<webfmis.Models.MstUserForm>()
+        .Name("detailSF")
+        .Columns(columns =>
+        {
+            columns.Command(command => command.Custom("- Delete").Click("CmdDeleteLine"))
+                .Width(100);
+            columns.Bound(x => x.Id)
+                .Filterable(false)
+                .Hidden();
+            columns.ForeignKey(x => x.FormId, a => a.Read(b => b.Action("Forms", "MstUser")), "Id", "Particulars")
+                .Title("Form Name")
+                .Filterable(false)
+                .Width(500)
+                .HtmlAttributes(new { onchange = "FormChange()" });
+            columns.Bound(x => x.CanAdd)
+                .Title("Add")
+                .ClientTemplate("<input type='checkbox' #= CanAdd ? checked='checked' : '' # />")
+                .HtmlAttributes(new { onchange = "CanAddChange()" })
+                .Filterable(false)
+                .Width(50);
+            columns.Bound(x => x.CanEdit)
+                .Title("Detail")
+                .ClientTemplate("<input type='checkbox' #= CanEdit ? checked='checked' : '' # />")
+                .HtmlAttributes(new { onchange = "CanEditChange()" })
+                .Filterable(false)
+                .Width(50);
+            columns.Bound(x => x.CanDelete)
+                .Title("Delete")
+                .ClientTemplate("<input type='checkbox' #= CanDelete ? checked='checked' : '' # />")
+                .HtmlAttributes(new { onchange = "CanDeleteChange()" })
+                .Filterable(false)
+                .Width(50);
+            columns.Bound(x => x.CanLock)
+                .Title("Save")
+                .ClientTemplate("<input type='checkbox' #= CanLock ? checked='checked' : '' # />")
+                .HtmlAttributes(new { onchange = "CanLockChange()" })
+                .Filterable(false)
+                .Width(50);
+            columns.Bound(x => x.CanPrint)
+                .Title("Print")
+                .ClientTemplate("<input type='checkbox' #= CanPrint ? checked='checked' : '' # />")
+                .HtmlAttributes(new { onchange = "CanPrintChange()" })
+                .Filterable(false)
+                .Width(50);
+
+            columns.Bound(x => x.CanUnlock).Hidden();
+            columns.Bound(x => x.IsDeleted).Hidden();
+        })
+        .Editable(editable => editable.Mode(GridEditMode.InCell))
+        .ToolBar(x =>
+        {
+            x.Custom().Text("+ Add Line").HtmlAttributes(new { onclick = "AddLine(); return false;" });
+        })
+        .Navigatable()
+        .Selectable(x => x.Mode(GridSelectionMode.Single))
+        .Pageable()
+        .DataSource(dataSource => dataSource
+            .Ajax()
+            .Model(model =>
+            {
+                model.Id(p => p.Id);
+                model.Field(p => p.FormId);
+                model.Field(p => p.CanAdd);
+                model.Field(p => p.CanEdit);
+                model.Field(p => p.CanDelete);
+                model.Field(p => p.CanLock);
+                model.Field(p => p.CanUnlock);
+                model.Field(p => p.CanPrint);
+                model.Field(p => p.IsDeleted);
+            })
+            .ServerOperation(false)
+            .PageSize(10)
+            .Read(read => read.Action("MstUserFormList", "MstUser", new { UserId = ViewData["UserId"] }))
+    ))
+</form>
+
+<script>
+    $("#frmDetail").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+</script>

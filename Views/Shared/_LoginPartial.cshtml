@@ -1,0 +1,94 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<style>
+
+    .k-switch-on.k-state-focused, .k-switch-on:focus {
+        box-shadow: none;
+    }
+
+    .k-switch-off.k-state-focused, .k-switch-off:focus {
+        box-shadow: none;
+    }
+
+    .k-switch, .k-switch-container, .k-switch-handle {
+        box-sizing: border-box;
+        margin-top: 5px;
+    }
+
+    .svg-inline--fa {
+        display: inline-block;
+        /*font-size: 20px;*/
+        height: 1em;
+        overflow: visible;
+        vertical-align: -.125em;
+    }
+</style>
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li>
+            @(Html.Kendo().Switch()
+                .Name("switch")
+                .Messages(c => c.Checked("YES").Unchecked("NO"))
+                .Events(ev => ev.Change("onChange"))
+            )
+        </li>
+
+        <li class="nav-item">
+            @*<a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity.Name!</a>*@
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage"><div id="DisplayUser" style="margin-top: 10px; margin-left: 5px; height: 41px;"></div></a>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-link btn btn-link text-dark"><i class="fas fa-sign-out-alt" style="font-size: 25px; margin-top: 5px; color: #ab3641;"></i></button>
+            </form>
+        </li>
+
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </li>
+    }
+</ul>
+
+<script>
+    function onChange(e) {
+        if (e.checked) {
+            $("#menu").hide();
+            $("#dashboard").show();
+
+            $.ajax({
+                url: "Home/AdminSwitch",
+                type: "GET",
+                dataType: 'json',
+                data: { "isSwitched": e.checked },
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                success: function (data) {
+                }
+            });
+        }
+        else
+        {
+            $("#menu").show();
+            $("#dashboard").hide();
+
+            $.ajax({
+                url: "Home/AdminSwitch",
+                type: "GET",
+                dataType: 'json',
+                data: { "isSwitched": e.checked },
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                success: function (data) {
+                }
+            });
+        }
+    }
+</script>

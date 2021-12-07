@@ -1,0 +1,45 @@
+﻿@model webfmis.DTO.JournalModel
+
+<form id="frmDetailJournal">
+    @(Html.Kendo().Grid<webfmis.Models.TrnJournal>()
+    .Name("journalForm")
+    .Columns(columns => {
+        columns.Bound(x => x.Id).Filterable(false).Width(100).Hidden();
+        columns.Bound(x => x.JournalDate).Format("{0:MM/dd/yyyy}").Title("Date").Width(100);
+        columns.Bound(x => x.BranchName).Title("Branch").Width(150);
+        columns.Bound(x => x.Code).Title("Code").Width(100);
+        columns.Bound(x => x.AccountName).Title("Account").Width(300);
+        columns.Bound(x => x.ArticleName).Title("Article").Width(200);
+        columns.Bound(x => x.DebitAmount).Title("Debit").Width(100)
+            .Format("{0:n2}")
+            .HtmlAttributes(new { @style = "text-align: end;" })
+            .ClientFooterTemplate("<div style='text-align: end'>#=kendo.format(\"{0:n2}\", kendo.parseFloat(sum))#</div>");
+        columns.Bound(x => x.CreditAmount).Title("Credit").Width(100)
+            .Format("{0:n2}")
+            .HtmlAttributes(new { @style = "text-align: end;" })
+            .ClientFooterTemplate("<div style='text-align: end'>#=kendo.format(\"{0:n2}\", kendo.parseFloat(sum))#</div>"); ;
+    })
+    .Selectable(x => x.Mode(GridSelectionMode.Single))
+    .Pageable()
+    .Sortable()
+    .Scrollable()
+    .HtmlAttributes(new { style = "height:500px;" })
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .PageSize(10)
+        .Model( x=>
+        {
+            x.Id(p => p.Id);
+            x.Field(p => p.JournalDate);
+            x.Field(p => p.BranchName);
+            x.Field(p => p.Code);
+            x.Field(p => p.AccountName);
+            x.Field(p => p.ArticleName);
+            x.Field(p => p.DebitAmount);
+            x.Field(p => p.CreditAmount);
+        })
+        .Aggregates(x => x.Add(a => a.DebitAmount).Sum())
+        .Aggregates(x => x.Add(a => a.CreditAmount).Sum())
+        .Read(read => read.Action("JournalList", "TrnJournal", new { TrsType = Model.TrsType, Id = Model.Id}))
+    ))
+</form>

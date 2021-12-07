@@ -1,0 +1,239 @@
+﻿@model TrnReceivingReceiptItem
+
+<form id="frmLineDetail" asp-antiforgery="false" method="post">
+    <div class="row" style="padding-top: 10px">
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="Id" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-sm-8">
+                    <kendo-textbox name="LineId" placeholder="Id" value="@Model.Id" readonly="true" style="width: 100px; background-color: lightgray;">
+                    </kendo-textbox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Poid" class="col-md-4" style="padding-top: 5px; font-weight: bold;">PO Number</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LinePoid" style="width: 60%"
+                                    datatextfield="Ponumber"
+                                    datavaluefield="Id"
+                                    value="@Model.Poid"
+                                    min-length="3"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    template="<span style='width: 200px;'>#: data.Ponumber#</span><span>#:  kendo.format('{0:MM/dd/yyyy}', kendo.parseDate(data.Podate))#</span>"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="70" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LinePOs", "TrnReceivingReceipt")" data="FilterLinePOs" />
+                            </transport>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="ItemId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Item</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineItemId" style="width: 100%"
+                                    datatextfield="Article"
+                                    datavaluefield="Id"
+                                    value="@Model.ItemId"
+                                    min-length="2"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    template="<span style='width: 200px;'>#: data.Article#</span><span>#: data.ManualArticleCode#</span>"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineArticles", "TrnReceivingReceipt")" data="FilterLineArticles" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Particulars" class="col-md-4" style="padding-top: 5px; font-weight: bold;"></label>
+                <div class="col-md-8">
+                    <kendo-textarea name="LineParticulars" placeholder="Particulars" value="@Model.Particulars" rows="2" style="width: 100%">
+                    </kendo-textarea>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Quantity</label>
+                <div class="col-md-8">
+                    <input class="form-control" name="LineQuantity" placeholder="Quantity" data-inputmask="'alias': 'currency'" value="@Model.Quantity" style="width: 50%; text-align: end" onchange="QuantityChange()"/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="UnitId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Unit</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineUnitId" style="width: 50%"
+                                    datatextfield="Unit"
+                                    datavaluefield="Id"
+                                    value="@Model.UnitId"
+                                    min-length="1"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineUnits", "TrnReceivingReceipt")" data="FilterLineUnits" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Cost</label>
+                <div class="col-md-8">
+                    <input class="form-control" name="LineCost" placeholder="Cost" data-inputmask="'alias': 'currency'" value="@Model.Cost" style="width: 50%; text-align: end" onchange="CostChange()"/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Amount</label>
+                <div class="col-md-8">
+                    <input class="form-control" name="LineAmount" placeholder="Amount" data-inputmask="'alias': 'currency'" value="@Model.Amount" style="width: 50%; text-align: end" readonly/>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-group row">
+                <label asp-for="BranchId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Branch</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineBranchId" style="width: 100%"
+                                    datatextfield="Branch"
+                                    datavaluefield="Id"
+                                    value="@Model.BranchId"
+                                    min-length="1"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineBranches", "TrnReceivingReceipt")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="Vatid" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Vat</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineVatId" style="width: 60%"
+                                    datatextfield="TaxType"
+                                    datavaluefield="Id"
+                                    value="@Model.Vatid"
+                                    min-length="1"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineTaxes", "TrnReceivingReceipt")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                    <input class="btn btn-light" name="LineVatRate" placeholder="Vat Rate" data-inputmask="'alias': 'currency', 'suffix': '%'" value="@Model.Vatpercentage" readonly style="width: 30%; text-align: end" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Vat Amount</label>
+                <div class="col-md-8">
+                    <input class="form-control" name="LineVatAmount" placeholder="Vat Amount" data-inputmask="'alias': 'currency'" value="@Model.Vatamount" style="width: 91%; text-align: end" readonly/>
+                </div>
+            </div>
+
+
+            <div class="form-group row">
+                <label asp-for="Wtaxid" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Withholding Tax</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineWTaxId" style="width: 60%"
+                                    datatextfield="TaxType"
+                                    datavaluefield="Id"
+                                    value="@Model.Wtaxid"
+                                    min-length="1"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineTaxes", "TrnReceivingReceipt")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                    <input class="btn btn-light" name="LineWtaxRate" placeholder="Wtax Rate" data-inputmask="'alias': 'currency', 'suffix': '%'" value="@Model.Wtaxpercentage" readonly style="width: 30%; text-align: end" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">WTax Amount</label>
+                <div class="col-md-8">
+                    <input class="form-control" name="LineWTaxAmount" placeholder="Wtax Amount" data-inputmask="'alias': 'currency'" value="@Model.Wtaxamount" style="width: 91%; text-align: end" readonly/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label asp-for="BaseUnitId" class="col-md-4" style="padding-top: 5px; font-weight: bold;">Base Unit</label>
+                <div class="col-md-8">
+                    <kendo-combobox name="LineBaseUnitId" style="width: 60%"
+                                    datatextfield="Unit"
+                                    datavaluefield="Id"
+                                    value="@Model.BaseUnitId"
+                                    min-length="1"
+                                    height="520"
+                                    filter="FilterType.Contains"
+                                    auto-bind="true"
+                                    on-change="EntityComboxChange"
+                                    enable="false">
+                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80" auto-sync="true">
+                            <transport>
+                                <read url="@Url.Action("LineBaseUnits", "TrnReceivingReceipt")" />
+                            </transport>
+                            <filters></filters>
+                        </datasource>
+                    </kendo-combobox>
+                    <input class="btn btn-light" name="LineBaseQuantity" placeholder="Wtax Rate" data-inputmask="'alias': 'currency'" value="@Model.BaseQuantity" style="width: 30%; text-align: end" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-md-4" style="padding-top: 5px; font-weight: bold;">Base Cost</label>
+                <div class="col-md-8">
+                    <input class="form-control" name="LineBaseCost" placeholder="Base Cost" data-inputmask="'alias': 'currency'" value="@Model.BaseCost" style="width: 91%; text-align: end" readonly/>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var widthVal = "260";
+
+    $("#LinePoid_listbox").css("width", widthVal);
+    $("#LinePoid_listbox").parents("div").css("width", widthVal);
+
+    $("#frmLineDetail").keydown(function (e) {
+        if (isFormDirty(e)) {
+            $isDirty = true;
+        }
+    });
+</script>

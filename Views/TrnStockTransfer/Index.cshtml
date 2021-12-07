@@ -1,0 +1,838 @@
+﻿@{
+    ViewData["Title"] = " - Stock Transfer";
+}
+
+<style>
+    .cmd-buttons {
+        margin-left: 10px;
+        width: 90px;
+    }
+
+    .recordcontent {
+        display: none;
+        padding: 5px;
+    }
+
+    .k-floating-label-container {
+        width: 100%;
+    }
+
+    #modal-dialog-journal {
+        max-width: 1500px;
+    }
+</style>
+
+<div class="lookupPanel">
+    <div class="input-group">
+        <input type="text" class="form-control" placeholder="Search..." id="search">
+        <button type="button"
+                class="btn bg-transparent"
+                style="margin-left: -40px; z-index: 90;"
+                id="clearSearch">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+</div>
+
+<div class="gridview">
+    <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+        <div class="col-md-6">
+            <h5 style="margin-top: 10px;"><i class="fas fa-dolly"></i> Stock Transfer</h5>
+        </div>
+
+        <div class="col-md-6">
+            <div class="CmdHome">
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button">
+                    <span class="btn-label">
+                        <i class="fa fa-arrow-left"></i>
+                    </span>Home
+                </button>
+            </div>
+
+            <div class="CmdAdd">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanAdd)
+                {
+                    <button class="btn btn-primary cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-plus-square"></i>
+                        </span>
+                        Add
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    @(Html.Kendo().Grid<webfmis.Models.TrnStockTransfer>()
+    .Name("mainList")
+    .Columns(columns => {
+
+        if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanEdit)
+        {
+            columns.Command(command => command.Custom("Detail")
+               .Click("CmdDetail"))
+               .Width(100);
+        }
+        else
+        {
+            columns.Command(command => command.Custom("Detail")
+               .Click("CmdDetail"))
+               .HtmlAttributes(new { @class = "k-state-disabled" })
+               .Width(100);
+        }
+
+        columns.Bound(x => x.Id).Filterable(false).Width(100).Hidden();
+        columns.Bound(x => x.Stnumber).Title("ST Number").Filterable(x => x.Cell(y => y.Operator("Contains"))).Width(150);
+        columns.Bound(x => x.Stdate).Title("Date").Format("{0:MM/dd/yyyy}").Filterable(x => x.Cell(y => y.Operator("Contains"))).Width(200);
+        columns.Bound(x => x.BranchName).Title("From Branch").Width(250);
+        columns.Bound(x => x.ToBranchName).Title("To Branch").Width(250);
+        columns.Bound(x => x.IsLocked).Title("L")
+            .ClientTemplate("<input type='checkbox' disabled #= IsLocked ? checked='checked' : '' # />")
+            .Filterable(false)
+            .Width(50);
+    })
+    .Selectable(x => x.Mode(GridSelectionMode.Single))
+    .Pageable()
+    .Sortable()
+    .Scrollable()
+    .Filterable()
+    .HtmlAttributes(new { style = "height:700px;" })
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .PageSize(10)
+        .ServerOperation(true)
+        .Read(read => read.Action("StockTransferList", "TrnStockTransfer"))
+        .Filter(x => x.Add( a=> a.Stdate).IsEqualTo(DateTime.Now.Date))
+    ))
+
+</div>
+
+<div class="recordcontent">
+    <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+        <div class="col-md-6">
+            <h5 style="margin-top: 10px;"><i class="fas fa-dolly"></i> Stock Transfer Detail</h5>
+        </div>
+
+        <div class="col-md-6">
+            <div class="CmdBack">
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button">
+                    <span class="btn-label">
+                        <i class="fa fa-arrow-left"></i>
+                    </span>
+                    Back
+                </button>
+            </div>
+
+            <div class="CmdSave">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanLock)
+                {
+                    <button class="btn btn-primary cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-lock"></i>
+                        </span>
+                        Save
+                    </button>
+                }
+            </div>
+
+            <div class="CmdDelete">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanDelete)
+                {
+                    <button class="btn btn-danger cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 100px">
+                        <span class="btn-label">
+                            <i class="fa fa-trash"></i>
+                        </span>
+                        Delete
+                    </button>
+                }
+            </div>
+
+            <div class="CmdPreview">
+                @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanPrint)
+                {
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button">
+                        <span class="btn-label">
+                            <i class="fa fa-print"></i>
+                        </span>
+                        Print
+                    </button>
+                }
+            </div>
+
+            <div class="CmdJournal">
+                <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                        type="button"
+                        style="width: 50px">
+                    <span class="btn-label">
+                        <i class="fas fa-book"></i>
+                    </span>
+                </button>
+            </div>
+
+            @if ((ViewData["UserRights"] as webfmis.Models.MstUserForm).CanEdit)
+            {
+                <div class="CmdNext">
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 50px">
+                        <span class="btn-label">
+                            <i class="fa fa-arrow-right"></i>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="CmdPrev">
+                    <button class="btn btn-light cmd-buttons float-right btn-labeled"
+                            type="button"
+                            style="width: 50px">
+                        <span class="btn-label">
+                            <i class="fa fa-arrow-left"></i>
+                        </span>
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="recordcontentform" />
+</div>
+
+<section id="journalSection">
+    <div class="modal fade" id="journalModal" data-bs-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div id="modal-dialog-journal" class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel"><i class="fas fa-book"></i> Journal Entries</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="journalcontentform" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $header = $(".gridview");
+    $content = $(".recordcontent");
+    $transitionTime = 200;
+
+    $isDirty = false;
+
+    $isSearchFocused = false;
+
+    $hasErrors = false;
+
+    $Entity = new Object();
+
+    $UserRights = JSON.parse('@Html.Raw(Json.Serialize(ViewData["UserRights"]))');
+
+    $(".CmdHome").click(function () {
+        location.href = "@Url.Action("Index","Home")";
+    });
+
+    $(".CmdAdd").click(function () {
+        $header.hide($transitionTime);
+        $content.show($transitionTime);
+
+        $("#recordcontentform").empty();
+        $("#recordcontentform").load("/TrnStockTransfer/Add");
+
+        $.ajax({
+            url: "TrnStockTransfer/LineArticles",
+            type: "GET",
+            data: { branchId: $("#BranchId").val() },
+            success: function (data) {
+                itemView = data;
+            }
+        });
+    });
+
+    function CmdDetail(e)
+    {
+        e.preventDefault();
+
+        var grid = $("#mainList").getKendoGrid();
+        var item = grid.dataItem($(e.target).closest("tr"));
+
+        grid.select($(e.target).closest("tr"));
+
+        $Entity = item;
+
+        $header.hide($transitionTime);
+        $content.show($transitionTime);
+
+        loadPartialView(item.Id);
+
+        $.ajax({
+            url: "TrnStockTransfer/LineArticles",
+            type: "GET",
+            data: { branchId: $("#BranchId").val() },
+            success: function (data) {
+                itemView = data;
+            }
+        });
+    }
+
+    $(".CmdBack").click(function () {
+        if ($isDirty) {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        Save();
+
+                        $header.show($transitionTime);
+                        $content.hide($transitionTime);
+                    }
+                    else {
+                        if (result.dismiss == "cancel") {
+                            $header.show($transitionTime);
+                            $content.hide($transitionTime);
+
+                            loadPartialView($Entity.Id);
+                        }
+                        else {
+                            $isDirty = true;
+                        }
+                    }
+                })
+
+            if (typeof e !== null) {
+                e.preventDefault();
+            }
+        }
+
+        $content.hide($transitionTime);
+        $header.show($transitionTime);
+    });
+
+    $(".CmdSave").click(function (e) {
+        Save(e)
+
+        if($UserRights.CanLock)
+        {
+            Swal.fire({
+                icon: 'success',
+                text: 'Record saved successfully!',
+                showConfirmButton: true,
+            })
+        }
+    });
+
+     $(".CmdDelete").click(function () {
+        Swal.fire({
+            icon: 'error',
+            text: "Do you want to delete '" + $Entity.Stnumber + "'?",
+            showCancelButton: true,
+            confirmButtonText: "Delete",
+            cancelButtonText: "No"
+        })
+        .then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "@(Url.Action("Delete", "TrnStockTransfer"))",
+                    type: "DELETE",
+                    dataType: 'json',
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    data: { "Id": $Entity.Id },
+                    success: function ()
+                    {
+                        var grid = $("#mainList").data("kendoGrid");
+                        grid.dataSource.read();
+
+                        $content.hide($transitionTime);
+                        $header.show($transitionTime);
+
+                        $isDirty = false;
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        Swal.fire({
+                            icon: 'warning',
+                            text: 'An error occured, Purchase order has been used in receiving!',
+                            showConfirmButton: true,
+                        })
+                    }
+                });
+            }
+            else if (result.isDenied)
+            {
+                //Do nothing...
+            }
+        })
+     });
+
+    $(".CmdJournal").click(function (e) {
+
+        $("#journalcontentform").empty();
+        $("#journalcontentform").load("/TrnJournal/Index?TrsType=ST&Id=" + $("#Id").val());
+
+        $("#journalModal").modal("show");
+    });
+
+    $(".CmdPreview").click(function () {
+        window.open(window.location.origin + "/TrnST.html?STId=" + $("#Id").val(),'_blank').focus()
+     });
+
+
+    $("#clearSearch").click(function () {
+        $("#search").val("");
+
+        var grid = $("#mainList").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            filter: { field: "STNumber", operator: "contains", value: $("#search").val() }
+        })
+    });
+
+    $("#search").on("click", function (e) {
+        if ($isDirty) {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        Save();
+
+                        $header.show($transitionTime);
+                        $content.hide($transitionTime);
+                    }
+                    else {
+                        if (result.dismiss == "cancel") {
+                            $header.show($transitionTime);
+                            $content.hide($transitionTime);
+
+                            loadPartialView($Entity.Id);
+                        }
+                        else {
+                            $isDirty = true;
+                        }
+                    }
+                })
+
+            e.preventDefault();
+            return;
+        }
+
+        $header.show($transitionTime);
+        $content.hide($transitionTime);
+    })
+
+    $("#search").change(function () {
+        var grid = $("#mainList").data("kendoGrid");
+
+        grid.dataSource.query({
+            page: 1,
+            pageSize: 10,
+            filter: { field: "STNumber", operator: "contains", value: $("#search").val() }
+        })
+            .then(function (e) {
+                if (grid.dataSource.data().length == 1) {
+                    $header.hide($transitionTime);
+                    $content.show($transitionTime);
+
+                    loadPartialView(grid.dataSource.view()[0].Id);
+                }
+            });
+    });
+
+    $(".CmdPrev").click(function () {
+        if ($isDirty) {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        Save();
+                    }
+                    else {
+                        if (result.dismiss == "cancel") {
+                            loadPartialView($Entity.Id);
+
+                            turnPage("Prev")
+                        }
+                        else {
+                            $isDirty = true;
+                        }
+                    }
+                })
+
+            e.preventDefault();
+        }
+
+        turnPage("Prev")
+    });
+
+    $(".CmdNext").click(function () {
+        if ($isDirty) {
+            $isDirty = false;
+
+            Swal.fire({
+                icon: "warning",
+                text: "Record has been changed, Do you want to save it?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                cancelButtonText: "No"
+            })
+                .then((result) => {
+                    if (result.isConfirmed) {
+                        Save();
+                    }
+                    else {
+                        if (result.dismiss == "cancel") {
+                            loadPartialView($Entity.Id);
+
+                            turnPage("Next");
+                        }
+                        else {
+                            $isDirty = true;
+                        }
+                    }
+                })
+
+            e.preventDefault();
+        }
+
+        turnPage("Next");
+    });
+</script>
+
+<script>
+    var itemView = new Object();
+    var unitView = new Object();
+
+    $.ajax({
+        url: "TrnStockTransfer/ArticleUnits",
+        type: "GET",
+        data: {articleId: 0},
+        success: function (data) {
+            unitView = data;
+        }
+    });
+
+    function AddSTLine() {
+        $isDirty = true;
+
+        var grid = $("#detailSF").getKendoGrid();
+
+        $.ajax({
+            url: "@(Url.Action("AddSTLine", "TrnStockTransfer"))",
+            type: "GET",
+            dataType: 'json',
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            data: { "stId": $Entity.Id },
+            success: function (data)
+            {
+                grid.dataSource.insert(data);
+            }
+        });
+    }
+
+    function CmdDeleteSTLine(e) {
+        $isDirty = true;
+
+        var grid = $("#detailSF").getKendoGrid();
+        var item = grid.dataItem($(e.target).closest("tr"));
+
+        Swal.fire({
+            icon: 'error',
+            text: "Do you want to delete the item?",
+            showCancelButton: true,
+            confirmButtonText: "Delete"
+        })
+        .then((result) => {
+            if (result.isConfirmed) {
+
+                item.set("IsDeleted", true);
+
+                grid.dataSource.filter({ field: "IsDeleted", operator: "eq", value: false });
+            }
+        })
+    }
+
+    function EntityComboxChange(e) {
+        $isDirty = true;
+    }
+
+    function DateChange() {
+        $isDirty = true;
+    }
+
+    function ItemChange() {
+        $isDirty = true;
+
+        var grid = $("#detailSF").getKendoGrid();
+        var rowData = grid.dataItem(grid.select());
+
+        var selectedIndex = $("#ItemId_listbox").data().handler._selectedIndices[0];
+        rowData.ItemId =  itemView[selectedIndex].Id;
+        rowData.UnitId = itemView[selectedIndex].UnitId;
+        rowData.BaseUnitId = itemView[selectedIndex].UnitId;
+
+        rowData.set("ItemId",  itemView[selectedIndex].Id);
+        rowData.set("UnitId",  itemView[selectedIndex].UnitId);
+        rowData.set("BaseUnitId",  itemView[selectedIndex].BaseUnitId);
+
+        GetItemCost(rowData);
+
+        ComputeAmount();
+    }
+
+    function QuantityChange() {
+        $isDirty = true;
+
+        var grid = $("#detailSF").getKendoGrid();
+        var rowData = grid.dataItem(grid.select());
+
+        GetItemCost(rowData);
+
+        ComputeAmount();
+    }
+
+    function UnitChange() {
+        $isDirty = true;
+
+        var grid = $("#detailSF").getKendoGrid();
+        var rowData = grid.dataItem(grid.select());
+
+        ComputeCost(rowData);
+
+        ComputeAmount();
+    }
+
+    function UnitClick()
+    {
+        if ($("#UnitId_listbox").data() != undefined)
+        {
+            //var dropDown = $("#UnitId").data("kendoDropDownList");
+            //dropDown.dataSource.read();
+        }
+    }
+
+    function CostChange() {
+        $isDirty = true;
+        ComputeAmount();
+    }
+
+    function IsProducedChanged() {
+        $isDirty = true;
+    }
+
+    function IsLockedChanged() {
+        $isDirty = true;
+    }
+</script>
+
+@*Main Methods*@
+<script>
+    window.addEventListener('beforeunload', function (e) {
+        if ($isDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    function Save(e)
+    {
+        if($UserRights.CanLock)
+        {
+            var result = "";
+            var grid = $("#mainList").data("kendoGrid");
+
+            var frmDetail = $("#frmDetail");
+
+            var formData = GetFormData(frmDetail);
+
+            formData.IsLocked = $("#IsLocked")[0].checked;
+
+            var detailSFGrid = $("#detailSF").getKendoGrid();
+
+            detailSFGrid.dataSource.filter({});
+
+            var detailSFGridData = $("#detailSF").data().kendoGrid.dataSource._data;
+            var detailSFData = detailSFGridData.map(({ Id, ItemId, ItemInventoryId, Particulars, UnitId, Quantity, Cost, Amount, BaseUnitId, BaseQuantity, BaseCost, IsDeleted }) => ({ Id, ItemId, ItemInventoryId, Particulars, UnitId, Quantity, Cost, Amount, BaseUnitId, BaseQuantity, BaseCost, IsDeleted }));
+
+             $.ajax({
+                url: "@(Url.Action("Save", "TrnStockTransfer"))",
+                type: "POST",
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { "data": formData, "dataSub": detailSFData },
+                success: function (data)
+                {
+                    grid.dataSource.read();
+
+                    loadPartialView(data.Id);
+
+                    $isDirty = false;
+                    $hasErrors = false;
+                 },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     Swal.fire({
+                         icon: 'warning',
+                         text: 'An error occured!',
+                         showConfirmButton: true,
+                     })
+                 }
+             });
+        }
+        else
+        {
+            Swal.fire({
+                icon: 'info',
+                text: 'Save not successful, User does not have rights!',
+                showConfirmButton: true,
+            })
+        }
+    }
+
+    function turnPage(action)
+    {
+        $.ajax({
+            url: "TrnStockTransfer/" + action,
+            type: "GET",
+            dataType: 'json',
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            data: { "Id": $Entity.Id },
+            success: function (data)
+            {
+                if (data != null)
+                {
+                    $Entity = data;
+
+                    loadPartialView(data.Id);
+                }
+            }
+        });
+    }
+
+    function loadPartialView(id) {
+        $("#recordcontentform").empty();
+        $("#recordcontentform").load("/TrnStockTransfer/StockTransferDetail?Id=" + id);
+    }
+</script>
+
+@*Detail Methods*@
+<script>
+    function ItemIdRouteValues() {
+        var row = $("#detailSF").find(".k-edit-cell").parent();
+        var grid = $("#detailSF").data("kendoGrid");
+
+        var item = grid.dataItem(row);
+
+        if (item != null) {
+            return {
+                branchId: $("#BranchId").val()
+            };
+        }
+
+        return {};
+    }
+
+
+    function UnitIdRouteValues(e) {
+        var row = $("#detailSF").find(".k-edit-cell").parent();
+        var grid = $("#detailSF").data("kendoGrid");
+
+        var item = grid.dataItem(row);
+
+        if (item != null) {
+            return {
+                articleId: item.ItemId
+            };
+        }
+
+        return {};
+    }
+
+    function GetItemCost(rowData) {
+        $.ajax({
+            url: "TrnStockTransfer/GetItemCost",
+            type: "GET",
+            dataType: "json",
+            data: { "articleId": rowData.ItemId, "branchId": $("#BranchId").val() },
+            success: function (data)
+            {
+                rowData.set("Cost", data.ItemCost);
+                rowData.set("InventoryCode", data.ItemInventoryCode);
+            }
+        });
+    }
+
+    function ComputeAmount() {
+        var grid = $("#detailSF").getKendoGrid();
+        var rowData = grid.dataItem(grid.select());
+
+        rowData.set("Amount", rowData.Quantity * rowData.Cost);
+
+        ComputeBaseUnit();
+    }
+
+    function ComputeCost() {
+        var grid = $("#detailSF").getKendoGrid();
+        var rowData = grid.dataItem(grid.select());
+
+        $.ajax({
+            url: "TrnStockTransfer/ComputeCost",
+            type: "GET",
+            dataType: "json",
+            data: { "itemId": rowData.ItemId, "unitId": rowData.UnitId, "cost": rowData.Cost },
+            success: function (data) {
+                rowData.set("BaseUnitId", data.BaseUnitId);
+                rowData.set("Cost", data.Cost);
+            }
+        });
+    }
+
+
+    function ComputeBaseUnit()
+    {
+        var grid = $("#detailSF").getKendoGrid();
+        var rowData = grid.dataItem(grid.select());
+
+        $.ajax({
+            url: "TrnStockTransfer/ComputeBaseUnit",
+            type: "GET",
+            dataType: "json",
+            data: { "itemId": rowData.ItemId, "unitId": rowData.UnitId, "quantity": rowData.Quantity, "amount": rowData.Amount },
+            success: function (data) {
+                rowData.set("BaseQuantity", data.BaseQuantity);
+                rowData.set("BaseCost", data.BaseCost);
+                rowData.set("BaseUnitId", data.BaseUnitId);
+            }
+        });
+    }
+</script>
+
+<script src="~/js/Util.js"></script>
